@@ -5,7 +5,7 @@
 # Minimal OS variable loading for performance
 . /etc/profile.d/001-functions
 
-tocon "Configuring user interface..."
+#tocon "Configuring user interface..."
 
 UIMODE=$(get_setting desktop.enabled)
 if [ "${UIMODE}" = "1" ] || \

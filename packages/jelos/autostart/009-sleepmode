@@ -5,7 +5,7 @@
 # Minimal OS variable loading for performance
 . /etc/profile.d/001-functions
 
-tocon "Configure suspend mode..."
+#tocon "Configure suspend mode..."
 
 ### Configure suspend mode.
 MYSLEEPMODE=$(get_setting system.suspendmode)

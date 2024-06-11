@@ -5,7 +5,7 @@
 # Minimal OS variable loading for performance
 . /etc/profile.d/001-functions
 
-tocon "Starting services..."
+#tocon "Starting services..."
 
 for SERVICE in /usr/lib/autostart/daemons/*
 do

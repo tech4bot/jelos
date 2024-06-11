@@ -5,7 +5,7 @@
 # Minimal OS variable loading for performance
 . /etc/profile.d/001-functions
 
-tocon "Applying kernel parameters..."
+#tocon "Applying kernel parameters..."
 sysctl vm.swappiness=1
 sysctl kernel.nmi_watchdog=0
 sysctl vm.laptop_mode=5

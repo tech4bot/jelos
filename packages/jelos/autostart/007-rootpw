@@ -5,7 +5,7 @@
 # Minimal OS variable loading for performance
 . /etc/profile.d/001-functions
 
-tocon "Setting root password..."
+#tocon "Setting root password..."
 
 if [ ! -d "/storage/.cache/samba" ]
 then

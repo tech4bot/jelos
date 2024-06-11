@@ -11,13 +11,19 @@ log() {
   echo "$(date): Autostart: $*" >>${BOOTLOG} 2>&1
 }
 
+#/usr/bin/init_leds.sh &
+
 performance 2>/dev/null
+
+#/usr/bin/show_splash &
+
+/usr/bin/init_leds.sh &
 
 ### Load platform specific quirks
 if [ -d "/usr/lib/autostart/quirks/platforms/${HW_DEVICE}" ]
 then
   log "Run ${HW_DEVICE} quirks."
-  tocon "Applying ${HW_DEVICE} quirks..."
+  #tocon "Applying ${HW_DEVICE} quirks..."
   for script in "/usr/lib/autostart/quirks/platforms/${HW_DEVICE}"/*
   do
     log "Run ${script}"
@@ -32,7 +38,7 @@ fi
 if [ -d "/usr/lib/autostart/quirks/devices/${QUIRK_DEVICE}" ]
 then
   log "Run ${QUIRK_DEVICE} quirks."
-  tocon "Applying ${QUIRK_DEVICE} quirks..."
+  #tocon "Applying ${QUIRK_DEVICE} quirks..."
   for script in "/usr/lib/autostart/quirks/devices/${QUIRK_DEVICE}"/*
   do
     log "Run ${script}"
@@ -44,8 +50,10 @@ then
 fi
 
 ### Start the automount service
-tocon "Starting storage services..."
+#tocon "Starting storage services..."
 systemctl start jelos-automount
+
+
 
 ### Run common start scripts
 for script in /usr/lib/autostart/common/*
@@ -79,11 +87,13 @@ then
 fi
 wait
 
-tocon "Starting user interface..."
+#tocon "Starting user interface..."
 log "Startup complete..."
 
 ### Re-source the profile so we fetch the correct UI_SERVICE variable.
 . /etc/profile
+
+sed -i 's/system.hostname=RK3566-BSP-X55/system.hostname=GAMEMT-E6-PLUS/g' /storage/.config/system/configs/system.cfg
 
 ### Lock is a prerequisite for emustation
 rm /var/lock/start.games 2>&1 >>${BOOTLOG}

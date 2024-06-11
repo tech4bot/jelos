@@ -6,7 +6,7 @@
 
 if [ "${DEVICE_HAS_FAN}" == "true" ]
 then
-  tocon "Enabling fan control..."
+  #tocon "Enabling fan control..."
   nohup systemctl start fancontrol &
 else
   nohup systemctl stop fancontrol &
@@ -14,7 +14,7 @@ fi
 
 if [ "${DEVICE_FAKE_JACKSENSE}" == "true" ]
 then
-  tocon "Starting headphone service..."
+  #tocon "Starting headphone service..."
   nohup systemctl start headphones &
 else
   nohup systemctl stop headphones &
@@ -22,7 +22,7 @@ fi
 
 if [ "${DEVICE_HAS_HDMI}" == "true" ]
 then
-  tocon "Starting hdmi service..."
+  #tocon "Starting hdmi service..."
   nohup systemctl start video &
 else
   nohup systemctl stop video &
@@ -30,11 +30,11 @@ fi
 
 if [ "${DEVICE_BATTERY_LED_STATUS}" == "true" ]
 then
-  tocon "Starting battery led status service..."
+  #tocon "Starting battery led status service..."
   nohup systemctl start batteryledstatus &
 else
   nohup systemctl stop batteryledstatus &
 fi
 
-tocon "Starting input service..."
+#tocon "Starting input service..."
 nohup systemctl start input &

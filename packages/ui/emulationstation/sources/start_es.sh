@@ -45,4 +45,4 @@ fi
 
 set_kill set "emulationstation"
 
-emulationstation --log-path /var/log --no-splash
+emulationstation --log-path /var/log

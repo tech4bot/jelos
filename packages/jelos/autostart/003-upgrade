@@ -9,7 +9,7 @@ if [ "$(cat /storage/.boot.hint 2>/dev/null)" = "UPDATE" ]
 then
   if [ -e "/usr/share/post-update" ]
   then
-    tocon "Performing post-update configuration..."
+    #tocon "Performing post-update configuration..."
     /usr/share/post-update >/var/log/upgrade.log 2>&1
   fi
   rm /storage/.boot.hint

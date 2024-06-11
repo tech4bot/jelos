@@ -8,7 +8,7 @@ Environment=XDG_RUNTIME_DIR=/var/run/0-runtime-dir
 Environment=HOME=/storage
 Environment=SDL_AUDIODRIVER=pulseaudio
 ExecStartPre=/usr/bin/es_settings
-ExecStart=/usr/bin/emulationstation --log-path /var/log --no-splash
+ExecStart=/usr/bin/emulationstation --log-path /var/log
 KillMode=process
 TimeoutStopSec=3
 Restart=always

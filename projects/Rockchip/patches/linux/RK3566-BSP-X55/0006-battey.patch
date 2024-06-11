@@ -1,0 +1,4615 @@
+diff --git a/arch/arm64/boot/dts/rockchip/rk3566-evb2-lp4x-v10-linux.dts b/arch/arm64/boot/dts/rockchip/rk3566-evb2-lp4x-v10-linux.dts
+index 1f3914977..1d8225d1c 100755
+--- a/arch/arm64/boot/dts/rockchip/rk3566-evb2-lp4x-v10-linux.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3566-evb2-lp4x-v10-linux.dts
+@@ -16,13 +16,14 @@
+ #include "rk3568-android.dtsi"
+ //#include "lcd/lcd_H546TAN01_720x1280_mipi_dsi0.dtsi"
+ //#include "lcd/lcd_axs1832_auo55_720x1280_mipi_dsi0.dtsi"
+-#include "lcd/lcd_HX8394F_720x1280_mipi_dsi0.dtsi"
++//#include "lcd/lcd_HX8394F_720x1280_mipi_dsi0.dtsi"
+ / {
+-	model = "Powkiddy x55";
++	model = "cHAos E6 Plus";
+ 	compatible = "rockchip,rk3566-rk817-tablet", "rockchip,rk3566";
+-/*
++
+ 	adc_keys: adc-keys {
+ 		compatible = "adc-keys";
++		status = "okay";
+ 		io-channels = <&saradc 0>;
+ 		io-channel-names = "buttons";
+ 		keyup-threshold-microvolt = <1800000>;
+@@ -39,74 +40,175 @@
+ 			linux,code = <KEY_VOLUMEDOWN>;
+ 			press-threshold-microvolt = <297500>;
+ 		};
+-	};
+-*/
+ 
+-	zed_joystick {
+-		compatible = "zed,joystick";
+-		io-channels = <&saradc 0>,<&saradc 1>,<&saradc 2>, <&saradc 3>;
+-		io-channel-names = "button0","button1","button2","button3";
+-		keyup-threshold-microvolt = <1800000>;
+-		poll-interval = <30>;
+-		debounce-interval = <100>;	
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&gpio_key_pin>;
+-	//	pinctrl-0 = <&gpio_key_pin &vcc5v0_otg_en>;
+-
+-		//外置USB手柄应晚于板载摇杠初始化,否则会抢占默认手柄
+-		otg-gpio = <&gpio4 RK_PC5 GPIO_ACTIVE_HIGH>;
+-
+-	//	gpio-key-num = <18>;
+-		//映射的键值写在驱动里面了
+-		key-gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
+-			<&gpio3 RK_PC7 GPIO_ACTIVE_LOW>,//BTN_TR2
+-			<&gpio3 RK_PD0 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_LEFTSHOULDER
+-			<&gpio3 RK_PD1 GPIO_ACTIVE_LOW>,//BTN_TL2
+-			<&gpio3 RK_PD2 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_A
+-			<&gpio3 RK_PD3 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_B
+-			<&gpio3 RK_PD4 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_X
+-			<&gpio3 RK_PD5 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_Y
+-			<&gpio3 RK_PD6 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_DPAD_LEFT
+-			<&gpio3 RK_PD7 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+-			<&gpio4 RK_PA0 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_DPAD_UP
+-			<&gpio4 RK_PA1 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_DPAD_DOWN
+-			<&gpio4 RK_PA2 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_BACK(select)
+-			<&gpio4 RK_PA3 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_START
+-			<&gpio4 RK_PA4 GPIO_ACTIVE_LOW>,//KEY_VOLUMEUP
+-			<&gpio4 RK_PA5 GPIO_ACTIVE_LOW>,//KEY_VOLUMEDOWN
+-			<&gpio4 RK_PA7 GPIO_ACTIVE_LOW>,//SDL_CONTROLLER_BUTTON_LEFTSTICK
+-			<&gpio4 RK_PB0 GPIO_ACTIVE_LOW>;//SDL_CONTROLLER_BUTTON_RIGHTSTICK
+-
+-
+-		left-x {
+-			label = "left x";
+-			adc-chan = <0>;
+-			linux,code = <ABS_X>;
+-			press-threshold-microvolt = <1750>;
++		esc-key {
++			linux,code = <KEY_ESC>;
++			label = "esc";
++			press-threshold-microvolt = <824000>;
+ 		};
+ 
+-		left-y {
+-			label = "left y";
+-			adc-chan = <1>;
+-			linux,code = <ABS_Y>;
+-			press-threshold-microvolt = <1750>;
++		select-key {
++			linux,code = <KEY_RIGHTSHIFT>;
++			label = "select";
++			press-threshold-microvolt = <1218000>;
+ 		};
+ 
+-		right-x {
+-			label = "right x";
+-			adc-chan = <2>;
+-			linux,code = <ABS_RX>;
+-			press-threshold-microvolt = <1750>;
++		start-key {
++			linux,code = <KEY_ENTER>;
++			label = "start";
++			press-threshold-microvolt = <1516000>;
+ 		};
++	};
+ 
+-		right-y {
+-			label = "right y";
+-			adc-chan = <3>;
+-			linux,code = <ABS_RY>;
+-			press-threshold-microvolt = <1750>;
++	joypad: singleadc-joypad {
++		compatible = "singleadc-joypad";
++
++		joypad-name = "retrogame_joypad";
++		joypad-product = <0x1101>;
++		joypad-revision = <0x0100>;
++
++		status = "okay";
++
++		/* gpio pincontrol setup */
++		pinctrl-names = "default";
++		pinctrl-0 = <&btn_pins>;
++
++		/* Analog mux define */
++		io-channel-names = "amux_adc";
++		io-channels = <&saradc 3>;
++
++		/* adc mux channel count */
++		amux-count = <4>;
++		/* adc mux select(a,b) gpio */
++		amux-a-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_LOW>;
++		amux-b-gpios = <&gpio4 RK_PB5 GPIO_ACTIVE_LOW>;
++		/* adc mux enable gpio */
++		amux-en-gpios = <&gpio4 RK_PB7 GPIO_ACTIVE_LOW>;
++
++		/* adc calculate scale */
++		button-adc-scale = <2>;
++
++		/* adc deadzone range  */
++		button-adc-deadzone = <64>;
++
++		/*
++		  specifies fuzz value that is used to filter noise from
++		  the event stream.
++		*/
++		button-adc-fuzz = <32>;
++		button-adc-flat = <32>;
++
++		/*
++		  Analog Stick data tuning value(precent)
++		  p = positive direction, n = negative direction
++		  report value = (real_adc_data * tuning_value) / 100
++		*/
++		abs_x-p-tuning = <450>;
++		abs_x-n-tuning = <450>;
++
++		abs_y-p-tuning = <450>;
++		abs_y-n-tuning = <450>;
++
++		abs_rx-p-tuning = <450>;
++		abs_rx-n-tuning = <450>;
++
++		abs_ry-p-tuning = <450>;
++		abs_ry-n-tuning = <450>;
++
++		/* poll device interval (ms), adc read interval */
++		poll-interval = <10>;
++
++		/* gpio button auto repeat set value : default disable */
++		/*
++			autorepeat;
++		*/
++		sw1 {
++			gpios = <&gpio4 RK_PB3 GPIO_ACTIVE_LOW>;
++			label = "GPIO DPAD-UP"; //B
++			linux,code = <BTN_DPAD_UP>;
+ 		};
+-        };  
+-	
++		sw2 {
++			gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_LOW>;
++			label = "GPIO DPAD-DOWN";//dpad_right
++			linux,code = <BTN_DPAD_DOWN>;
++		};
++		sw3 {
++			gpios = <&gpio4 RK_PB1 GPIO_ACTIVE_LOW>;
++			label = "GPIO DPAD-LEFT";//left_joystick
++			linux,code = <BTN_DPAD_LEFT>;
++		};
++		sw4 {
++			gpios = <&gpio4 RK_PB2 GPIO_ACTIVE_LOW>;
++			label = "GPIO DPAD-RIGHT";//right_joystick
++			linux,code = <BTN_DPAD_RIGHT>;
++		};
++		sw5 {
++			gpios = <&gpio4 RK_PA7 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN-A";//x
++			linux,code = <BTN_SOUTH>;
++		};
++		sw6 {
++			gpios = <&gpio4 RK_PA6 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN-B";//A
++			linux,code = <BTN_EAST>;
++		};
++		
++		sw7 {
++			gpios = <&gpio4 RK_PA5 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN-X";//y
++			linux,code = <BTN_NORTH>;
++		};
++		sw8 {
++			gpios = <&gpio4 RK_PB0 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN-Y";//dpad_left
++			linux,code = <BTN_WEST>;
++		};
++		sw9 {
++			gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_SELECT";
++			linux,code = <BTN_SELECT>;
++		};
++		sw10 {
++			gpios = <&gpio3 RK_PB5 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_START";
++			linux,code = <BTN_START>;
++		};
++		sw11 {
++			gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_F";
++			linux,code = <BTN_MODE>;
++		};
++		sw12 {
++			gpios = <&gpio4 RK_PA1 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_TL";//ok
++			linux,code = <BTN_TL>;
++		};
++		sw13 {
++			gpios = <&gpio4 RK_PA4 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_TR2"; //BTN_TL2
++			linux,code = <BTN_TR2>;
++		};
++		sw14 {
++			gpios = <&gpio4 RK_PA2 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_TL2";//BTN_TR
++			linux,code = <BTN_TL2>;
++		};
++		sw15 {
++			gpios = <&gpio4 RK_PA3 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_TR";//BTN_TR2
++			linux,code = <BTN_TR>;
++		};
++		sw16 {
++			gpios = <&gpio4 RK_PC0 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_THUMBL";//dpad_up
++			linux,code = <BTN_THUMBL>;
++		};
++		sw17 {
++			gpios = <&gpio4 RK_PC1 GPIO_ACTIVE_LOW>;
++			label = "GPIO BTN_THUMBR";//dpad_down
++			linux,code = <BTN_THUMBR>;
++		};
++	};
+ 
+ 	backlight: backlight {
+ 		compatible = "pwm-backlight";
+@@ -150,15 +252,15 @@
+ 
+ 	charge-animation {
+ 		compatible = "rockchip,uboot-charge";
+-		rockchip,uboot-charge-on = <1>;
++		rockchip,uboot-charge-on = <0>;
+ 		rockchip,android-charge-on = <0>;
+ 		rockchip,uboot-low-power-voltage = <3350>;
+ 		rockchip,screen-on-voltage = <3400>;
+-		status = "okay";
++		status = "disabled";
+ 	};
+ 
+ 	flash_rgb13h: flash-rgb13h {
+-		status = "okay";
++		status = "disabled";
+ 		compatible = "led,rgb13h";
+ 		label = "gpio-flash";
+ 		pinctrl-names = "default";
+@@ -171,26 +273,6 @@
+ 		rockchip,camera-module-facing = "back";
+ 	};
+ 
+-	vcc5v0_otg: vcc5v0-otg-regulator {
+-		compatible = "regulator-fixed";
+-		enable-active-high;
+-		gpio = <&gpio4 RK_PC5 GPIO_ACTIVE_HIGH>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&vcc5v0_otg_en>;
+-		regulator-name = "vcc5v0_otg";
+-	};
+-
+-	vcc5v0_host: vcc5v0-host-regulator {
+-		compatible = "regulator-fixed";
+-		enable-active-high;
+-		gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&vcc5v0_host_en>;
+-		regulator-name = "vcc5v0_host";
+-		regulator-always-on;
+-		regulator-boot-on;
+-	};
+-
+ 	rk817-sound {
+ 		compatible = "simple-audio-card";
+ 		simple-audio-card,format = "i2s";
+@@ -280,6 +362,32 @@
+ 			3300000 0x1>;
+ 	};
+ 
++	leds: gpio-leds {
++                compatible = "gpio-leds";
++                pinctrl-names = "default";
++                pinctrl-0 =<&leds_gpio>;
++
++				left_joystick {
++					gpios = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
++					default-state="on";
++                };
++
++                right_joystick {
++					gpios = <&gpio4 RK_PC5 GPIO_ACTIVE_HIGH>;
++					default-state="on";
++                };
++				
++                left_below {
++					gpios = <&gpio0 RK_PC2 GPIO_ACTIVE_HIGH>;
++					default-state="on";
++                };
++
++				right_below {
++					gpios = <&gpio4 RK_PC3 GPIO_ACTIVE_HIGH>;
++					default-state="on";
++                };			
++	};
++
+ 	wireless-wlan {
+ 		compatible = "wlan-platdata";
+ 		rockchip,grf = <&grf>;
+@@ -359,14 +467,244 @@
+ 
+ &dsi0 {
+ 	status = "okay";
+-	dsi0_panel: panel@0 {
++	//	rockchip,dual-channel = <&dsi1>;
++	
++	//rockchip,lane-rate = <1000>;
++ 	dsi0_panel: panel@0 {
++		compatible ="simple-panel-dsi";
++		reg = <0>;
++		reset-delay-ms = <60>;
++		enable-delay-ms = <120>;
++		prepare-delay-ms = <60>;
++		init-delay-ms = <60>;
++		unprepare-delay-ms = <60>;
++		disable-delay-ms = <60>;
++		
+ 		backlight = <&backlight>;
+ 	//	power_vsx-gpios = <&gpio0 RK_PB7 GPIO_ACTIVE_HIGH>;
+ 		enable-gpios = <&gpio0 RK_PC7 GPIO_ACTIVE_HIGH>;
+-		reset-gpios = <&gpio0 RK_PD5 GPIO_ACTIVE_LOW>;
+-	//	pinctrl-names = "default";
+-	//	pinctrl-0 = <&lcd0_rst_gpio>;
++		reset-gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_LOW>;
++
++		rotation = <270>;
++
++		dsi,flags = <(MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
++			MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_EOT_PACKET)>;
++		dsi,format = <MIPI_DSI_FMT_RGB888>;
++		dsi,lanes  = <4>;
++		panel-init-sequence = [
++			39 00 04 FF 98 81 07
++			15 00 02 03 20
++			15 00 02 04 06
++			15 00 02 05 00
++			15 00 02 06 01
++			15 00 02 07 00
++			15 00 02 08 00
++			15 00 02 09 00
++			15 00 02 0A 00
++			15 00 02 0B 2F
++			15 00 02 0C 00
++			15 00 02 0D 00
++			15 00 02 0E 00
++			15 00 02 0F 00
++			15 00 02 10 40
++			15 00 02 11 02
++			15 00 02 12 05
++			15 00 02 13 00
++			15 00 02 14 00
++			15 00 02 15 00
++			15 00 02 16 2F
++			15 00 02 17 2F
++			15 00 02 18 00
++			15 00 02 19 00
++			15 00 02 1A 00
++			15 00 02 1B 50
++			15 00 02 1C BC
++			15 00 02 1D 0C
++			15 00 02 1E 00
++			15 00 02 1F 00
++			15 00 02 20 00
++			15 00 02 21 00
++			15 00 02 22 00
++			15 00 02 23 C0
++			15 00 02 24 30
++			15 00 02 25 00
++			15 00 02 26 00
++			15 00 02 27 03
++			15 00 02 30 01
++			15 00 02 31 23
++			15 00 02 32 45
++			15 00 02 33 67
++			15 00 02 34 89
++			15 00 02 35 AB
++			15 00 02 36 01
++			15 00 02 37 23
++			15 00 02 38 45
++			15 00 02 39 67
++			15 00 02 3A 89
++			15 00 02 3B AB
++			15 00 02 3C CD
++			15 00 02 3D EF
++			15 00 02 50 11
++			15 00 02 51 06
++			15 00 02 52 0C
++			15 00 02 53 0D
++			15 00 02 54 0E
++			15 00 02 55 0F
++			15 00 02 56 02
++			15 00 02 57 02
++			15 00 02 58 02
++			15 00 02 59 02
++			15 00 02 5A 02
++			15 00 02 5B 02
++			15 00 02 5C 02
++			15 00 02 5D 02
++			15 00 02 5E 02
++			15 00 02 5F 02
++			15 00 02 60 05
++			15 00 02 61 05
++			15 00 02 62 05
++			15 00 02 63 02
++			15 00 02 64 01
++			15 00 02 65 00
++			15 00 02 66 08
++			15 00 02 67 08
++			15 00 02 68 0C
++			15 00 02 69 0D
++			15 00 02 6A 0E
++			15 00 02 6B 0F
++			15 00 02 6C 02
++			15 00 02 6D 02
++			15 00 02 6E 02
++			15 00 02 6F 02
++			15 00 02 70 02
++			15 00 02 71 02
++			15 00 02 72 02
++			15 00 02 73 02
++			15 00 02 74 02
++			15 00 02 75 02
++			15 00 02 76 05
++			15 00 02 77 05
++			15 00 02 78 05
++			15 00 02 79 02
++			15 00 02 7A 01
++			15 00 02 7B 00
++			15 00 02 7C 06
++			39 00 04 FF 98 81 08
++			15 00 02 76 B4
++			15 00 02 78 02
++			15 00 02 74 2B
++			15 00 02 8E 15
++			15 00 02 40 01
++			15 00 02 84 81
++			15 00 02 72 25
++			15 00 02 E3 75
++			15 00 02 7D CB
++			15 00 02 7E 49
++			15 00 02 49 10
++			15 00 02 32 05
++			15 00 02 3C 05
++			39 00 04 FF 98 81 01
++			15 00 02 22 0A
++			15 00 02 43 01
++			15 00 02 53 82
++			15 00 02 55 85
++			15 00 02 50 B9
++			15 00 02 51 BA
++			15 00 02 31 00
++			15 00 02 A0 00
++			15 00 02 A1 14
++			15 00 02 A2 2B
++			15 00 02 A3 16
++			15 00 02 A4 1C
++			15 00 02 A5 2E
++			15 00 02 A6 18
++			15 00 02 A7 20
++			15 00 02 A8 78
++			15 00 02 A9 20
++			15 00 02 AA 2A
++			15 00 02 AB 83
++			15 00 02 AC 25
++			15 00 02 AD 1B
++			15 00 02 AE 54
++			15 00 02 AF 2B
++			15 00 02 B0 2B
++			15 00 02 B1 4F
++			15 00 02 B2 67
++			15 00 02 B3 39
++			15 00 02 C0 00
++			15 00 02 C1 14
++			15 00 02 C2 2B
++			15 00 02 C3 16
++			15 00 02 C4 1C
++			15 00 02 C5 2E
++			15 00 02 C6 18
++			15 00 02 C7 20
++			15 00 02 C8 78
++			15 00 02 C9 20
++			15 00 02 CA 2A
++			15 00 02 CB 83
++			15 00 02 CC 25
++			15 00 02 CD 1B
++			15 00 02 CE 54
++			15 00 02 CF 2B
++			15 00 02 D0 2B
++			15 00 02 D1 4F
++			15 00 02 D2 67
++			15 00 02 D3 39
++			39 00 04 FF 98 81 00
++			05 78 01 11
++			05 14 01 29
++		];
++
++		panel-exit-sequence = [
++			05 10 01 28
++			05 20 01 10
++		];
++
++		disp_timings0: display-timings {
++			native-mode = <&dsi0_timing0>;
++			dsi0_timing0: timing0 {
++				clock-frequency = <66000000>;
++				hactive = <720>;
++				vactive = <1280>;
++				hfront-porch = <50>;
++				hsync-len = <20>;
++				hback-porch = <50>;
++				vfront-porch = <10>;
++				vsync-len = <4>;
++				vback-porch = <10>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <0>;
++				pixelclk-active = <0>;
++				};
++			};
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				panel_in_dsi: endpoint {
++					remote-endpoint = <&dsi_out_panel>;
++				};
++			};
++		};
+ 	};
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@1 {
++			reg = <1>;
++			dsi_out_panel: endpoint {
++				remote-endpoint = <&panel_in_dsi>;
++			};
++		};
++	};
++
+ };
+ 
+ &dsi0_in_vp0 {
+@@ -694,22 +1032,22 @@
+ 			ocv_table = <3400 3553 3621 3688 3735 3768 3801
+ 				     3826 3843 3857 3878 3904 3934 3972
+ 				     4006 4020 4030 4044 4059 4083 4138>;
+-			design_capacity = <3527>;
+-			design_qmax = <3880>;
+-			bat_res = <91>;
++			design_capacity = <4949>;
++			design_qmax = <5500>;
++			bat_res = <143>;
+ 			sleep_enter_current = <150>;
+ 			sleep_exit_current = <180>;
+ 			sleep_filter_current = <100>;
+ 			power_off_thresd = <3350>;
+-			zero_algorithm_vol = <3300>;
++			zero_algorithm_vol = <3850>;
+ 			max_soc_offset = <60>;
+ 			monitor_sec = <5>;
+ 			sample_res = <10>;
+ 			virtual_power = <0>;
+-		//	dc_det_gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;//uboot使用
+-			charge_red_gpio = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;//充电指示灯 红
+-			charge_green_gpio = <&gpio4 RK_PB5 GPIO_ACTIVE_HIGH>;//充电指示灯 绿
+-			charge_yellow_gpio = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;//充电指示灯 黄   
++		/*	dc_det_gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;//uboot使用
++			charge_red_gpio = <&gpio3 RK_PC1 GPIO_ACTIVE_HIGH>;
++			charge_green_gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
++			charge_yellow_gpio = <&gpio3 RK_PC3 GPIO_ACTIVE_HIGH>;*/
+ 		};
+ 
+ 		charger {
+@@ -722,10 +1060,10 @@
+ 			chrg_finish_cur = <300>;
+ 			virtual_power = <0>;
+ 			dc_det_adc = <0>;
+-		//	dc_det_gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
+-			charge_red_gpio = <&gpio4 RK_PB4 GPIO_ACTIVE_HIGH>;//充电指示灯 红
+-			charge_green_gpio = <&gpio4 RK_PB5 GPIO_ACTIVE_HIGH>;//充电指示灯 绿
+-			charge_yellow_gpio = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;//充电指示灯 黄   
++		/*	dc_det_gpio = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
++			charge_red_gpio = <&gpio3 RK_PC1 GPIO_ACTIVE_HIGH>;
++			charge_green_gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
++			charge_yellow_gpio = <&gpio3 RK_PC3 GPIO_ACTIVE_HIGH>; */
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&charge_led_gpio>;
+ 			extcon = <&usb2phy0>;
+@@ -917,43 +1255,45 @@
+ 			rockchip,pins = <2 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>;
+ 		};
+ 	};
+-	usb {
+-         vcc5v0_host_en: vcc5v0-host-en {
+-                 rockchip,pins = <4 RK_PC4 RK_FUNC_GPIO &pcfg_pull_up>;
+-         };
+-
+-         vcc5v0_otg_en: vcc5v0-otg-en {
+-                 rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_pull_up>;
+-         };
++
++	gpio-leds {
++		leds_gpio: leds-gpio {
++			rockchip,pins =
++				<0 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>,
++				<4 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>,
++				<4 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>,
++				<4 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
+ 	};
++
+ 	led {
+ 		charge_led_gpio:charge-led-gpio{
+-                 rockchip,pins = <4 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>,
+-                 		 <4 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>,
+-                                 <4 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
++                 rockchip,pins = <3 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>,
++                 		 <3 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>,
++                                 <3 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
+ 		};
+ 	
+ 	};
+-	buttons {
+-		gpio_key_pin: gpio-key-pin {
+-			rockchip,pins = <3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PC7 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD0 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD1 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD2 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD4 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD5 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD6 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <3 RK_PD7 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA0 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA1 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA2 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA3 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA4 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA5 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>,
+-			                <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_up>;
++	btns {
++		btn_pins: btn-pins {
++			rockchip,pins = 
++					<4 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PB2 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PC0 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PC1 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PA5 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PB1 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PA1 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PA2 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PA3 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PA4 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PB3 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>,
++					<4 RK_PA6 RK_FUNC_GPIO &pcfg_pull_up>,
++					<3 RK_PB6 RK_FUNC_GPIO &pcfg_pull_up>,
++					<3 RK_PB5 RK_FUNC_GPIO &pcfg_pull_up>,
++					<3 RK_PB7 RK_FUNC_GPIO &pcfg_pull_up>;
+ 		};
+ 	};
+ };
+@@ -1112,13 +1452,11 @@
+ };
+ 
+ &u2phy0_otg {
+-	vbus-supply = <&vcc5v0_otg>;
+ 	status = "okay";
+ };
+ 
+ &u2phy0_host {
+ 	status = "okay";
+-	phy-supply = <&vcc5v0_host>;
+ };
+ 
+ &combphy1_usq {
+diff --git a/drivers/input/joystick/Kconfig b/drivers/input/joystick/Kconfig
+index 753043d2c..c642816dd 100644
+--- a/drivers/input/joystick/Kconfig
++++ b/drivers/input/joystick/Kconfig
+@@ -363,4 +363,9 @@ config JOYSTICK_PXRC
+ 
+ config JOYSTICK_ZED
+ 	tristate "zed board joystick"
++
++config JOYSTICK_SINGLEADCJOY
++	tristate "Single SARADC dual-joystick gamepad driver"
++	help
++	  The 1-in 4-out SARADC joypad driver.
+ endif
+diff --git a/drivers/input/joystick/Makefile b/drivers/input/joystick/Makefile
+index e52973873..24353978f 100644
+--- a/drivers/input/joystick/Makefile
++++ b/drivers/input/joystick/Makefile
+@@ -36,4 +36,4 @@ obj-$(CONFIG_JOYSTICK_XPAD)		+= xpad.o
+ obj-$(CONFIG_JOYSTICK_ZHENHUA)		+= zhenhua.o
+ obj-$(CONFIG_JOYSTICK_WALKERA0701)	+= walkera0701.o
+ obj-$(CONFIG_JOYSTICK_ZED)	+= zed_joystick.o
+-
++obj-$(CONFIG_JOYSTICK_SINGLEADCJOY)	+= singleadcjoy.o
+\ No newline at end of file
+diff --git a/drivers/input/joystick/singleadcjoy.c b/drivers/input/joystick/singleadcjoy.c
+new file mode 100644
+index 000000000..9db72178d
+--- /dev/null
++++ b/drivers/input/joystick/singleadcjoy.c
+@@ -0,0 +1,1162 @@
++/*----------------------------------------------------------------------------*/
++
++/*
++ * Copyright (c) 2008-2021 Anbernic 
++ */
++
++/*
++ * Single SARADC dual-joystick gamepad driver
++ */
++
++/*----------------------------------------------------------------------------*/
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/input.h>
++#include <linux/input-polldev.h>
++#include <linux/ioport.h>
++#include <linux/platform_device.h>
++#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
++#include <linux/gpio_keys.h>
++#include <linux/iio/consumer.h>
++#include <linux/iio/types.h>
++#include <linux/property.h>
++#include <linux/of_gpio.h>
++#include <linux/delay.h>
++
++/*----------------------------------------------------------------------------*/
++#define DRV_NAME "retrogame_joypad"
++#define __MURMUR__
++/*----------------------------------------------------------------------------*/
++#define	ADC_MAX_VOLTAGE		1800
++#define	ADC_DATA_TUNING(x, p)	((x * p) / 100)
++#define	ADC_TUNING_DEFAULT	180
++
++struct bt_adc {
++	/* report value (mV) */
++	int value;
++	/* report type */
++	int report_type;
++	/* input device init value (mV) */
++	int max, min;
++	/* calibrated adc value */
++	int cal;
++	/*  adc scale value */
++	int scale;
++	/* invert report */
++	bool invert;
++	/* amux channel */
++	int amux_ch;
++	/* adc data tuning value([percent), p = positive, n = negative */
++	int tuning_p, tuning_n;
++};
++
++struct analog_mux {
++	/* IIO ADC Channel : amux connect channel */
++	struct iio_channel *iio_ch;
++	/* analog mux select(a,b) gpio */
++	int sel_a_gpio, sel_b_gpio;
++	/* analog mux enable gpio */
++	int en_gpio;
++};
++
++struct bt_gpio {
++	/* GPIO Request label */
++	const char *label;
++	/* GPIO Number */
++	int num;
++	/* report type */
++	int report_type;
++	/* report linux code */
++	int linux_code;
++	/* prev button value */
++	bool old_value;
++	/* button press level */
++	bool active_level;
++};
++
++struct joypad {
++	struct device *dev;
++	int poll_interval;
++
++	/* report enable/disable */
++	bool enable;
++
++	/* analog mux & joystick control */
++	struct analog_mux *amux;
++	/* analog mux max count */
++	int amux_count;
++	/* analog button */
++	struct bt_adc *adcs;
++
++	/* report interval (ms) */
++	int bt_gpio_count;
++	struct bt_gpio *gpios;
++
++	/* button auto repeat */
++	int auto_repeat;
++
++	/* report threshold (mV) */
++	int bt_adc_fuzz, bt_adc_flat;
++	/* adc read value scale */
++	int bt_adc_scale;
++	/* joystick deadzone control */
++	int bt_adc_deadzone;
++
++	struct mutex lock;
++
++	/* amux debug channel */
++	int debug_ch;
++};
++
++/*----------------------------------------------------------------------------*/
++//
++// set to the value in the boot.ini file. (if exist)
++//
++/*----------------------------------------------------------------------------*/
++static unsigned int g_button_adc_fuzz = 0;
++static unsigned int g_button_adc_flat = 0;
++static unsigned int g_button_adc_scale = 0;
++static unsigned int g_button_adc_deadzone = 0;
++
++static int button_adc_fuzz(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	g_button_adc_fuzz = simple_strtoul(str, NULL, 10);
++	return 0;
++}
++__setup("button-adc-fuzz=", button_adc_fuzz);
++
++static int button_adc_flat(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	g_button_adc_flat = simple_strtoul(str, NULL, 10);
++	return 0;
++}
++__setup("button-adc-flat=", button_adc_flat);
++
++static int button_adc_scale(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	g_button_adc_scale = simple_strtoul(str, NULL, 10);
++	return 0;
++}
++__setup("button-adc-scale=", button_adc_scale);
++
++static int button_adc_deadzone(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	g_button_adc_deadzone = simple_strtoul(str, NULL, 10);
++	return 0;
++}
++__setup("button-adc-deadzone=", button_adc_deadzone);
++
++/*----------------------------------------------------------------------------*/
++/*----------------------------------------------------------------------------*/
++static int joypad_amux_select(struct analog_mux *amux, int channel)
++{
++	/* select mux channel */
++	gpio_set_value(amux->en_gpio, 0);
++
++	switch(channel) {
++		case 0:	/* EVENT (ABS_RY) */
++			gpio_set_value(amux->sel_a_gpio, 0);
++			gpio_set_value(amux->sel_b_gpio, 0);
++			break;
++		case 1:	/* EVENT (ABS_RX) */
++			gpio_set_value(amux->sel_a_gpio, 0);
++			gpio_set_value(amux->sel_b_gpio, 1);
++			break;
++		case 2:	/* EVENT (ABS_Y) */
++			gpio_set_value(amux->sel_a_gpio, 1);
++			gpio_set_value(amux->sel_b_gpio, 0);
++			break;
++		case 3:	/* EVENT (ABS_X) */
++			gpio_set_value(amux->sel_a_gpio, 1);
++			gpio_set_value(amux->sel_b_gpio, 1);
++			break;
++		default:
++			/* amux disanle */
++			gpio_set_value(amux->en_gpio, 1);
++			return -1;
++	}
++	/* mux swtiching speed : 35ns(on) / 9ns(off) */
++	usleep_range(10, 20);
++	return 0;
++}
++
++/*----------------------------------------------------------------------------*/
++static int joypad_adc_read(struct analog_mux *amux, struct bt_adc *adc)
++{
++	int value;
++
++
++	if (joypad_amux_select(amux, adc->amux_ch))
++		return 0;
++
++	iio_read_channel_raw(amux->iio_ch, &value);
++
++	value *= adc->scale;
++#ifdef __LEFT_JOYSTICK_INVERT__
++	return value;
++#else
++	return (adc->invert ? (adc->max - value) : value);
++#endif
++}
++
++/*----------------------------------------------------------------------------*/
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/devices/platform/retrogame_joypad/poll_interval [rw]
++ */
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_store_poll_interval(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	mutex_lock(&joypad->lock);
++	joypad->poll_interval = simple_strtoul(buf, NULL, 10);
++	mutex_unlock(&joypad->lock);
++
++	return count;
++}
++
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_poll_interval(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	return sprintf(buf, "%d\n", joypad->poll_interval);
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(poll_interval, S_IWUSR | S_IRUGO,
++		   joypad_show_poll_interval,
++		   joypad_store_poll_interval);
++
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/devices/platform/retrogame_joypad/adc_fuzz [r]
++ */
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_adc_fuzz(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	return sprintf(buf, "%d\n", joypad->bt_adc_fuzz);
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(adc_fuzz, S_IWUSR | S_IRUGO,
++		   joypad_show_adc_fuzz,
++		   NULL);
++
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/devices/platform/retrogame_joypad/adc_flat [r]
++ */
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_adc_flat(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	return sprintf(buf, "%d\n", joypad->bt_adc_flat);
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(adc_flat, S_IWUSR | S_IRUGO,
++		   joypad_show_adc_flat,
++		   NULL);
++
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/devices/platform/retrogame_joypad/enable [rw]
++ */
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_store_enable(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	mutex_lock(&joypad->lock);
++	joypad->enable = simple_strtoul(buf, NULL, 10);
++	mutex_unlock(&joypad->lock);
++
++	return count;
++}
++
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_enable(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	return sprintf(buf, "%d\n", joypad->enable);
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(enable, S_IWUSR | S_IRUGO,
++		   joypad_show_enable,
++		   joypad_store_enable);
++
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/devices/platform/retrogame_joypad/adc_cal [rw]
++ */
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_store_adc_cal(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++	bool calibration;
++
++	calibration = simple_strtoul(buf, NULL, 10);
++
++	if (calibration) {
++		int nbtn;
++
++		mutex_lock(&joypad->lock);
++		for (nbtn = 0; nbtn < joypad->amux_count; nbtn++) {
++			struct bt_adc *adc = &joypad->adcs[nbtn];
++
++			adc->value = joypad_adc_read(joypad->amux, adc);
++			if (!adc->value) {
++				dev_err(joypad->dev, "%s : saradc channels[%d]!\n",
++					__func__, nbtn);
++				continue;
++			}
++			adc->cal = adc->value;
++		}
++		mutex_unlock(&joypad->lock);
++	}
++	return count;
++}
++
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_adc_cal(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++	int nbtn;
++	ssize_t pos;
++
++	for (nbtn = 0, pos = 0; nbtn < joypad->amux_count; nbtn++) {
++		struct bt_adc *adc = &joypad->adcs[nbtn];
++		pos += sprintf(&buf[pos], "adc[%d]->cal = %d\n",
++				nbtn, adc->cal);
++	}
++	pos += sprintf(&buf[pos], "adc scale = %d\n", joypad->bt_adc_scale);
++	return pos;
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(adc_cal, S_IWUSR | S_IRUGO,
++		   joypad_show_adc_cal,
++		   joypad_store_adc_cal);
++
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/devices/platform/retrogame_joypad/amux_debug [rw]
++ *
++ * echo [debug channel] > amux_debug
++ * cat amux_debug : debug channel mux set & adc read
++ */
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_store_amux_debug(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++
++	joypad->debug_ch = simple_strtoul(buf, NULL, 10);
++
++	/* if error than default setting(debug_ch = 0) */
++	if (joypad->debug_ch > joypad->amux_count)
++		joypad->debug_ch = 0;
++
++	return count;
++}
++
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_amux_debug(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct platform_device *pdev  = to_platform_device(dev);
++	struct joypad *joypad = platform_get_drvdata(pdev);
++	struct analog_mux *amux = joypad->amux;
++	ssize_t pos;
++	int value;
++
++	mutex_lock(&joypad->lock);
++
++	/* disable poll driver */
++	if (joypad->enable)
++		joypad->enable = false;
++
++	if (joypad_amux_select(amux, joypad->debug_ch))
++		goto err_out;
++
++	if (iio_read_channel_processed(amux->iio_ch, &value))
++		goto err_out;
++
++	pos = sprintf(buf, "amux ch[%d], adc scale = %d, adc value = %d\n",
++			joypad->debug_ch, joypad->bt_adc_scale,
++			value * joypad->bt_adc_scale);
++	goto out;
++
++err_out:
++	pos = sprintf(buf, "error : amux setup & adc read!\n");
++out:
++	mutex_unlock(&joypad->lock);
++	return pos;
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(amux_debug, S_IWUSR | S_IRUGO,
++		   joypad_show_amux_debug,
++		   joypad_store_amux_debug);
++
++/*----------------------------------------------------------------------------*/
++#ifdef __MURMUR__
++/*----------------------------------------------------------------------------*/
++/*
++ * ATTRIBUTES:
++ *
++ * /sys/bus/platform/devices/singleadc-joypad/vol [rw]
++ *
++ * echo [debug channel] > vol
++ * cat vol : debug channel mux set & adc read
++ */
++/*----------------------------------------------------------------------------*/
++
++extern int rk817_hp_inserted;
++
++int rk817_pa_power_on=1;
++EXPORT_SYMBOL(rk817_pa_power_on);
++
++int vol_temp=100;
++
++static ssize_t joypad_store_vol(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{	
++
++	vol_temp = simple_strtoul(buf, NULL, 10);
++
++	if(vol_temp>=15){
++		rk817_pa_power_on=1;
++		if(rk817_hp_inserted==0){
++			gpio_direction_output(146,1);	
++		}
++		
++	}else{
++		rk817_pa_power_on=0;
++
++		if(rk817_hp_inserted==0){
++			gpio_direction_output(146,0);	
++		}
++	}
++
++	return count;
++}
++
++/*----------------------------------------------------------------------------*/
++static ssize_t joypad_show_vol(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	ssize_t pos;
++	pos = sprintf(buf, "%d\n",vol_temp);
++	return pos;
++}
++
++/*----------------------------------------------------------------------------*/
++static DEVICE_ATTR(vol, S_IWUSR | S_IRUGO,joypad_show_vol, joypad_store_vol);
++
++/*----------------------------------------------------------------------------*/
++#endif
++#ifdef __MURMUR__
++/*----------------------------------------------------------------------------*/
++static struct attribute *joypad_attrs[] = {
++	&dev_attr_poll_interval.attr,
++	&dev_attr_adc_fuzz.attr,
++	&dev_attr_adc_flat.attr,
++	&dev_attr_enable.attr,
++	&dev_attr_adc_cal.attr,
++	&dev_attr_amux_debug.attr,
++	&dev_attr_vol.attr,
++	NULL,
++};
++#else
++/*----------------------------------------------------------------------------*/
++static struct attribute *joypad_attrs[] = {
++	&dev_attr_poll_interval.attr,
++	&dev_attr_adc_fuzz.attr,
++	&dev_attr_adc_flat.attr,
++	&dev_attr_enable.attr,
++	&dev_attr_adc_cal.attr,
++	&dev_attr_amux_debug.attr,
++	NULL,
++};
++#endif
++
++static struct attribute_group joypad_attr_group = {
++	.attrs = joypad_attrs,
++};
++
++/*----------------------------------------------------------------------------*/
++/*----------------------------------------------------------------------------*/
++static void joypad_gpio_check(struct input_polled_dev *poll_dev)
++{
++	struct joypad *joypad = poll_dev->private;
++	int nbtn, value;
++
++	for (nbtn = 0; nbtn < joypad->bt_gpio_count; nbtn++) {
++		struct bt_gpio *gpio = &joypad->gpios[nbtn];
++
++		if (gpio_get_value_cansleep(gpio->num) < 0) {
++			dev_err(joypad->dev, "failed to get gpio state\n");
++			continue;
++		}
++		value = gpio_get_value(gpio->num);
++		if (value != gpio->old_value) {
++			input_event(poll_dev->input,
++				gpio->report_type,
++				gpio->linux_code,
++				(value == gpio->active_level) ? 1 : 0);
++			gpio->old_value = value;
++		}
++	}
++	input_sync(poll_dev->input);
++}
++
++/*----------------------------------------------------------------------------*/
++static void joypad_adc_check(struct input_polled_dev *poll_dev)
++{
++	struct joypad *joypad = poll_dev->private;
++	int nbtn;
++
++	for (nbtn = 0; nbtn < joypad->amux_count; nbtn++) {
++		struct bt_adc *adc = &joypad->adcs[nbtn];
++
++		adc->value = joypad_adc_read(joypad->amux, adc);
++		if (!adc->value) {
++			//dev_err(joypad->dev, "%s : saradc channels[%d]! adc->value : %d\n",__func__, nbtn, adc->value);
++			continue;
++		}
++		adc->value = adc->value - adc->cal;
++
++		/* Joystick Deadzone check */
++		if (joypad->bt_adc_deadzone) {
++			if (adc->value > joypad->bt_adc_deadzone)
++				adc->value -= joypad->bt_adc_deadzone;
++			else if (adc->value < -joypad->bt_adc_deadzone)
++				adc->value += joypad->bt_adc_deadzone;
++			else adc->value = 0;
++		}
++		
++		adc->value = abs(adc->value) < 16 ? 0 : adc->value;
++
++		/* adc data tuning */
++		if (adc->tuning_n && adc->value < 0)
++			adc->value = ADC_DATA_TUNING(adc->value, adc->tuning_n);
++		if (adc->tuning_p && adc->value > 0)
++			adc->value = ADC_DATA_TUNING(adc->value, adc->tuning_p);
++
++		adc->value = adc->value > adc->max ? adc->max : adc->value;
++		adc->value = adc->value < adc->min ? adc->min : adc->value;
++
++		input_report_abs(poll_dev->input,
++			adc->report_type,
++			adc->invert ? adc->value * (-1) : adc->value);
++	}
++	input_sync(poll_dev->input);
++}
++
++/*----------------------------------------------------------------------------*/
++static void joypad_poll(struct input_polled_dev *poll_dev)
++{
++	struct joypad *joypad = poll_dev->private;
++
++	if (joypad->enable) {
++		joypad_adc_check(poll_dev);
++		joypad_gpio_check(poll_dev);
++	}
++	if (poll_dev->poll_interval != joypad->poll_interval) {
++		mutex_lock(&joypad->lock);
++		poll_dev->poll_interval = joypad->poll_interval;
++		mutex_unlock(&joypad->lock);
++	}
++}
++
++/*----------------------------------------------------------------------------*/
++static void joypad_open(struct input_polled_dev *poll_dev)
++{
++	struct joypad *joypad = poll_dev->private;
++	int nbtn;
++
++	for (nbtn = 0; nbtn < joypad->bt_gpio_count; nbtn++) {
++		struct bt_gpio *gpio = &joypad->gpios[nbtn];
++		gpio->old_value = gpio->active_level ? 0 : 1;
++	}
++	for (nbtn = 0; nbtn < joypad->amux_count; nbtn++) {
++		struct bt_adc *adc = &joypad->adcs[nbtn];
++
++		adc->value = joypad_adc_read(joypad->amux, adc);
++		if (!adc->value) {
++			dev_err(joypad->dev, "%s : saradc channels[%d]!\n",
++				__func__, nbtn);
++			continue;
++		}
++		adc->cal = adc->value;
++		dev_info(joypad->dev, "%s : adc[%d] adc->cal = %d\n",
++			__func__, nbtn, adc->cal);
++	}
++	/* buttons status sync */
++	joypad_adc_check(poll_dev);
++	joypad_gpio_check(poll_dev);
++
++	/* button report enable */
++	mutex_lock(&joypad->lock);
++	joypad->enable = true;
++	mutex_unlock(&joypad->lock);
++
++	dev_info(joypad->dev, "%s : opened\n", __func__);
++}
++
++/*----------------------------------------------------------------------------*/
++static void joypad_close(struct input_polled_dev *poll_dev)
++{
++	struct joypad *joypad = poll_dev->private;
++
++	/* button report disable */
++	mutex_lock(&joypad->lock);
++	joypad->enable = false;
++	mutex_unlock(&joypad->lock);
++
++	dev_info(joypad->dev, "%s : closed\n", __func__);
++}
++
++/*----------------------------------------------------------------------------*/
++static int joypad_amux_setup(struct device *dev, struct joypad *joypad)
++{
++	struct analog_mux *amux;
++	enum iio_chan_type type;
++	enum of_gpio_flags flags;
++	int ret;
++
++	/* analog mux control struct init */
++	joypad->amux = devm_kzalloc(dev, sizeof(struct analog_mux),
++					GFP_KERNEL);
++	if (!joypad->amux) {
++		dev_err(dev, "%s amux devm_kzmalloc error!", __func__);
++		return -ENOMEM;
++	}
++	amux = joypad->amux;
++	amux->iio_ch = devm_iio_channel_get(dev, "amux_adc");
++	if (IS_ERR(amux->iio_ch)) {
++		dev_err(dev, "iio channel get error\n");
++		return -EINVAL;
++	}
++	if (!amux->iio_ch->indio_dev)
++		return -ENXIO;
++
++	if (iio_get_channel_type(amux->iio_ch, &type))
++		return -EINVAL;
++
++	if (type != IIO_VOLTAGE) {
++		dev_err(dev, "Incompatible channel type %d\n", type);
++		return -EINVAL;
++	}
++
++	amux->sel_a_gpio = of_get_named_gpio_flags(dev->of_node,
++				"amux-a-gpios", 0, &flags);
++	if (gpio_is_valid(amux->sel_a_gpio)) {
++		ret = devm_gpio_request(dev, amux->sel_a_gpio, "amux-sel-a");
++		if (ret < 0) {
++			dev_err(dev, "%s : failed to request amux-sel-a %d\n",
++				__func__, amux->sel_a_gpio);
++			goto err_out;
++		}
++		ret = gpio_direction_output(amux->sel_a_gpio, 0);
++		if (ret < 0)
++			goto err_out;
++	}
++
++	amux->sel_b_gpio = of_get_named_gpio_flags(dev->of_node,
++				"amux-b-gpios", 0, &flags);
++	if (gpio_is_valid(amux->sel_b_gpio)) {
++		ret = devm_gpio_request(dev, amux->sel_b_gpio, "amux-sel-b");
++		if (ret < 0) {
++			dev_err(dev, "%s : failed to request amux-sel-b %d\n",
++				__func__, amux->sel_b_gpio);
++			goto err_out;
++		}
++		ret = gpio_direction_output(amux->sel_b_gpio, 0);
++		if (ret < 0)
++			goto err_out;
++	}
++
++	amux->en_gpio = of_get_named_gpio_flags(dev->of_node,
++				"amux-en-gpios", 0, &flags);
++	if (gpio_is_valid(amux->en_gpio)) {
++		ret = devm_gpio_request(dev, amux->en_gpio, "amux-en");
++		if (ret < 0) {
++			dev_err(dev, "%s : failed to request amux-en %d\n",
++				__func__, amux->en_gpio);
++			goto err_out;
++		}
++		ret = gpio_direction_output(amux->en_gpio, 0);
++		if (ret < 0)
++			goto err_out;
++	}
++	return	0;
++err_out:
++	return ret;
++}
++
++/*----------------------------------------------------------------------------*/
++static int joypad_adc_setup(struct device *dev, struct joypad *joypad)
++{
++	int nbtn;
++
++	/* adc button struct init */
++	joypad->adcs = devm_kzalloc(dev, joypad->amux_count *
++				sizeof(struct bt_adc), GFP_KERNEL);
++	if (!joypad->adcs) {
++		dev_err(dev, "%s devm_kzmalloc error!", __func__);
++		return -ENOMEM;
++	}
++
++	for (nbtn = 0; nbtn < joypad->amux_count; nbtn++) {
++		struct bt_adc *adc = &joypad->adcs[nbtn];
++
++		adc->scale = joypad->bt_adc_scale;
++		
++		adc->max = (ADC_MAX_VOLTAGE / 2);
++		adc->min = (ADC_MAX_VOLTAGE / 2) * (-1);
++		if (adc->scale) {
++			adc->max *= adc->scale;
++			adc->min *= adc->scale;
++		}
++		adc->amux_ch = nbtn;
++		adc->invert = false;
++
++		switch (nbtn) {
++			case 0:
++				adc->report_type = ABS_RY;
++				if (device_property_read_u32(dev,
++					"abs_ry-p-tuning",
++					&adc->tuning_p))
++					adc->tuning_p = ADC_TUNING_DEFAULT;
++				if (device_property_read_u32(dev,
++					"abs_ry-n-tuning",
++					&adc->tuning_n))
++					adc->tuning_n = ADC_TUNING_DEFAULT;
++				break;
++			case 1:
++				adc->report_type = ABS_RX;
++				if (device_property_read_u32(dev,
++					"abs_rx-p-tuning",
++					&adc->tuning_p))
++					adc->tuning_p = ADC_TUNING_DEFAULT;
++				if (device_property_read_u32(dev,
++					"abs_rx-n-tuning",
++					&adc->tuning_n))
++					adc->tuning_n = ADC_TUNING_DEFAULT;
++				break;
++			case 2:
++			#ifdef __LEFT_JOYSTICK_INVERT__
++				adc->invert = true;	
++			#endif
++				adc->report_type = ABS_Y;
++				if (device_property_read_u32(dev,
++					"abs_y-p-tuning",
++					&adc->tuning_p))
++					adc->tuning_p = ADC_TUNING_DEFAULT;
++				if (device_property_read_u32(dev,
++					"abs_y-n-tuning",
++					&adc->tuning_n))
++					adc->tuning_n = ADC_TUNING_DEFAULT;
++				break;
++			case 3:
++			#ifdef __LEFT_JOYSTICK_INVERT__
++				adc->invert = true;	
++			#endif
++				adc->report_type = ABS_X;
++				if (device_property_read_u32(dev,
++					"abs_x-p-tuning",
++					&adc->tuning_p))
++					adc->tuning_p = ADC_TUNING_DEFAULT;
++				if (device_property_read_u32(dev,
++					"abs_x-n-tuning",
++					&adc->tuning_n))
++					adc->tuning_n = ADC_TUNING_DEFAULT;
++				break;
++			default :
++				dev_err(dev, "%s amux count(%d) error!",
++					__func__, nbtn);
++				return -EINVAL;
++		}
++	}
++	return	0;
++}
++
++/*----------------------------------------------------------------------------*/
++static int joypad_gpio_setup(struct device *dev, struct joypad *joypad)
++{
++	struct device_node *node, *pp;
++	int nbtn;
++
++	node = dev->of_node;
++	if (!node)
++		return -ENODEV;
++
++	joypad->gpios = devm_kzalloc(dev, joypad->bt_gpio_count *
++				sizeof(struct bt_gpio), GFP_KERNEL);
++
++	if (!joypad->gpios) {
++		dev_err(dev, "%s devm_kzmalloc error!", __func__);
++		return -ENOMEM;
++	}
++
++	nbtn = 0;
++	for_each_child_of_node(node, pp) {
++		enum of_gpio_flags flags;
++		struct bt_gpio *gpio = &joypad->gpios[nbtn++];
++		int error;
++
++		gpio->num = of_get_gpio_flags(pp, 0, &flags);
++		if (gpio->num < 0) {
++			error = gpio->num;
++			dev_err(dev, "Failed to get gpio flags, error: %d\n",
++				error);
++			return error;
++		}
++
++		/* gpio active level(key press level) */
++		gpio->active_level = (flags & OF_GPIO_ACTIVE_LOW) ? 0 : 1;
++
++		gpio->label = of_get_property(pp, "label", NULL);
++
++		if (gpio_is_valid(gpio->num)) {
++			error = devm_gpio_request_one(dev, gpio->num,
++						      GPIOF_IN, gpio->label);
++			if (error < 0) {
++				dev_err(dev,
++					"Failed to request GPIO %d, error %d\n",
++					gpio->num, error);
++				return error;
++			}
++		}
++		if (of_property_read_u32(pp, "linux,code", &gpio->linux_code)) {
++			dev_err(dev, "Button without keycode: 0x%x\n",
++				gpio->num);
++			return -EINVAL;
++		}
++		if (of_property_read_u32(pp, "linux,input-type",
++				&gpio->report_type))
++			gpio->report_type = EV_KEY;
++	}
++	if (nbtn == 0)
++		return -EINVAL;
++
++	return	0;
++}
++
++/*----------------------------------------------------------------------------*/
++struct input_dev * joypad_input_g;
++
++
++void rk_send_key_f_key_up(void)
++{
++	if (!joypad_input_g)
++		return;
++
++	input_report_key(joypad_input_g, BTN_MODE, 1);
++	input_sync(joypad_input_g);
++}
++EXPORT_SYMBOL(rk_send_key_f_key_up);
++
++
++void rk_send_key_f_key_down(void)
++{
++	if (!joypad_input_g)
++		return;
++
++	input_report_key(joypad_input_g, BTN_MODE, 0);
++	input_sync(joypad_input_g);
++}
++EXPORT_SYMBOL(rk_send_key_f_key_down);
++
++
++static int joypad_input_setup(struct device *dev, struct joypad *joypad)
++{
++	struct input_polled_dev *poll_dev;
++	struct input_dev *input;
++	int nbtn, error;
++	u32 joypad_revision = 0;
++	u32 joypad_product = 0;
++
++	poll_dev = devm_input_allocate_polled_device(dev);
++	if (!poll_dev) {
++		dev_err(dev, "no memory for polled device\n");
++		return -ENOMEM;
++	}
++
++	poll_dev->private	= joypad;
++	poll_dev->poll		= joypad_poll;
++	poll_dev->poll_interval	= joypad->poll_interval;
++	poll_dev->open		= joypad_open;
++	poll_dev->close		= joypad_close;
++
++	input = poll_dev->input;
++	joypad_input_g=input;
++
++	device_property_read_string(dev, "joypad-name", &input->name);
++	input->phys = DRV_NAME"/input0";
++
++	device_property_read_u32(dev, "joypad-revision", &joypad_revision);
++	device_property_read_u32(dev, "joypad-product", &joypad_product);
++	input->id.bustype = BUS_HOST;
++	input->id.vendor  = 0x484B;
++	input->id.product = (u16)joypad_product;
++	input->id.version = (u16)joypad_revision;
++
++	/* IIO ADC key setup (0 mv ~ 1800 mv) * adc->scale */
++	__set_bit(EV_ABS, input->evbit);
++	for(nbtn = 0; nbtn < joypad->amux_count; nbtn++) {
++		struct bt_adc *adc = &joypad->adcs[nbtn];
++		input_set_abs_params(input, adc->report_type,
++				adc->min, adc->max,
++				joypad->bt_adc_fuzz,
++				joypad->bt_adc_flat);
++		dev_info(dev,
++			"%s : SCALE = %d, ABS min = %d, max = %d,"
++			" fuzz = %d, flat = %d, deadzone = %d\n",
++			__func__, adc->scale, adc->min, adc->max,
++			joypad->bt_adc_fuzz, joypad->bt_adc_flat,
++			joypad->bt_adc_deadzone);
++		dev_info(dev,
++			"%s : adc tuning_p = %d, adc_tuning_n = %d\n\n",
++			__func__, adc->tuning_p, adc->tuning_n);
++	}
++
++	/* GPIO key setup */
++	__set_bit(EV_KEY, input->evbit);
++	for(nbtn = 0; nbtn < joypad->bt_gpio_count; nbtn++) {
++		struct bt_gpio *gpio = &joypad->gpios[nbtn];
++		input_set_capability(input, gpio->report_type,
++				gpio->linux_code);
++	}
++
++	if (joypad->auto_repeat)
++		__set_bit(EV_REP, input->evbit);
++
++	joypad->dev = dev;
++
++	error = input_register_polled_device(poll_dev);
++	if (error) {
++		dev_err(dev, "unable to register polled device, err=%d\n",
++			error);
++		return error;
++	}
++	return 0;
++}
++
++/*----------------------------------------------------------------------------*/
++static void joypad_setup_value_check(struct device *dev, struct joypad *joypad)
++{
++	/*
++		fuzz: specifies fuzz value that is used to filter noise from
++			the event stream.
++	*/
++	if (g_button_adc_fuzz)
++		joypad->bt_adc_fuzz = g_button_adc_fuzz;
++	else
++		device_property_read_u32(dev, "button-adc-fuzz",
++					&joypad->bt_adc_fuzz);
++	/*
++		flat: values that are within this value will be discarded by
++			joydev interface and reported as 0 instead.
++	*/
++	if (g_button_adc_flat)
++		joypad->bt_adc_flat = g_button_adc_flat;
++	else
++		device_property_read_u32(dev, "button-adc-flat",
++					&joypad->bt_adc_flat);
++
++	/* Joystick report value control */
++	if (g_button_adc_scale)
++		joypad->bt_adc_scale = g_button_adc_scale;
++	else
++		device_property_read_u32(dev, "button-adc-scale",
++					&joypad->bt_adc_scale);
++
++	/* Joystick deadzone value control */
++	if (g_button_adc_deadzone)
++		joypad->bt_adc_deadzone = g_button_adc_deadzone;
++	else
++		device_property_read_u32(dev, "button-adc-deadzone",
++					&joypad->bt_adc_deadzone);
++
++}
++
++/*----------------------------------------------------------------------------*/
++static int joypad_dt_parse(struct device *dev, struct joypad *joypad)
++{
++	int error = 0;
++
++	/* initialize value check from boot.ini */
++	joypad_setup_value_check(dev, joypad);
++
++	device_property_read_u32(dev, "amux-count",
++				&joypad->amux_count);
++
++	device_property_read_u32(dev, "poll-interval",
++				&joypad->poll_interval);
++
++	joypad->auto_repeat = device_property_present(dev, "autorepeat");
++
++	joypad->bt_gpio_count = device_get_child_node_count(dev);
++
++	if ((joypad->amux_count == 0) || (joypad->bt_gpio_count == 0)) {
++		dev_err(dev, "adc key = %d, gpio key = %d error!",
++			joypad->amux_count, joypad->bt_gpio_count);
++		return -EINVAL;
++	}
++
++	error = joypad_adc_setup(dev, joypad);
++	if (error)
++		return error;
++
++	error = joypad_amux_setup(dev, joypad);
++	if (error)
++		return error;
++
++	error = joypad_gpio_setup(dev, joypad);
++	if (error)
++		return error;
++
++	dev_info(dev, "%s : adc key cnt = %d, gpio key cnt = %d\n",
++			__func__, joypad->amux_count, joypad->bt_gpio_count);
++
++	return error;
++}
++
++/*----------------------------------------------------------------------------*/
++static int joypad_probe(struct platform_device *pdev)
++{
++	struct joypad *joypad;
++	struct device *dev = &pdev->dev;
++	int error;
++
++	joypad = devm_kzalloc(dev, sizeof(struct joypad), GFP_KERNEL);
++	if (!joypad) {
++		dev_err(dev, "joypad devm_kzmalloc error!");
++		return -ENOMEM;
++	}
++
++	/* device tree data parse */
++	error = joypad_dt_parse(dev, joypad);
++	if (error) {
++		dev_err(dev, "dt parse error!(err = %d)\n", error);
++		return error;
++	}
++
++	mutex_init(&joypad->lock);
++	platform_set_drvdata(pdev, joypad);
++
++	error = sysfs_create_group(&pdev->dev.kobj, &joypad_attr_group);
++	if (error) {
++		dev_err(dev, "create sysfs group fail, error: %d\n",
++			error);
++		return error;
++	}
++
++	/* poll input device setup */
++	error = joypad_input_setup(dev, joypad);
++	if (error) {
++		dev_err(dev, "input setup failed!(err = %d)\n", error);
++		return error;
++	}
++	dev_info(dev, "%s : probe success\n", __func__);
++	return 0;
++}
++
++/*----------------------------------------------------------------------------*/
++static const struct of_device_id joypad_of_match[] = {
++	{ .compatible = "singleadc-joypad", },
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, joypad_of_match);
++
++/*----------------------------------------------------------------------------*/
++static struct platform_driver joypad_driver = {
++	.probe = joypad_probe,
++	.driver = {
++		.name = DRV_NAME,
++		.of_match_table = of_match_ptr(joypad_of_match),
++	},
++};
++
++/*----------------------------------------------------------------------------*/
++static int __init joypad_init(void)
++{
++	return platform_driver_register(&joypad_driver);
++}
++
++/*----------------------------------------------------------------------------*/
++static void __exit joypad_exit(void)
++{
++	platform_driver_unregister(&joypad_driver);
++}
++
++/*----------------------------------------------------------------------------*/
++late_initcall(joypad_init);
++module_exit(joypad_exit);
+diff --git a/drivers/power/supply/rk817_battery.c b/drivers/power/supply/rk817_battery.c
+index cdfd8c145..1257d5edb 100644
+--- a/drivers/power/supply/rk817_battery.c
++++ b/drivers/power/supply/rk817_battery.c
+@@ -39,24 +39,18 @@
+ #include <linux/wakelock.h>
+ #include <linux/workqueue.h>
+ 
+-#include <linux/kobject.h>
+-#include <linux/sysfs.h>
+-#include <linux/iio/consumer.h>
+-static int dbg_enable = 0;
+-
+-int g_charge_status = 1;
++static int dbg_enable;
+ 
+ module_param_named(dbg_level, dbg_enable, int, 0644);
+ 
+ #define DBG(args...) \
+ 	do { \
+-		if (0) { \
++		if (dbg_enable) { \
+ 			pr_info(args); \
+ 		} \
+ 	} while (0)
+ 
+-//#define BAT_INFO(fmt, args...) pr_info(fmt, ##args)
+-#define BAT_INFO(fmt, args...) 
++#define BAT_INFO(fmt, args...) pr_info(fmt, ##args)
+ 
+ #define DRIVER_VERSION	"1.00"
+ #define SFT_SET_KB	1
+@@ -78,19 +72,19 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
+ 	((x) * 60)
+ 
+ #define ADC_TO_CURRENT(adc_value, samp_res)	\
+-	(adc_value * 1720 / 1000 / samp_res)
++	(adc_value * 172 / 1000 / samp_res)
+ #define CURRENT_TO_ADC(current, samp_res)	\
+-	(current * 1000 * samp_res / 1720)
++	(current * 1000 * samp_res / 172)
+ 
+ #define ADC_TO_CAPACITY(adc_value, samp_res)	\
+-	(adc_value / 1000 * 1720 / 3600 / samp_res)
++	(adc_value / 1000 * 172 / 3600 / samp_res)
+ #define CAPACITY_TO_ADC(capacity, samp_res)	\
+-	(capacity * samp_res * 3600 / 1720 * 1000)
++	(capacity * samp_res * 3600 / 172 * 1000)
+ 
+ #define ADC_TO_CAPACITY_UAH(adc_value, samp_res)	\
+-	(adc_value / 3600 * 1720 / samp_res)
++	(adc_value / 3600 * 172 / samp_res)
+ #define ADC_TO_CAPACITY_MAH(adc_value, samp_res)	\
+-	(adc_value / 1000 * 1720 / 3600 / samp_res)
++	(adc_value / 1000 * 172 / 3600 / samp_res)
+ 
+ /* THREAML_REG */
+ #define TEMP_85C		(0x00 << 2)
+@@ -144,8 +138,10 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
+ #define SAMPLE_RES_DIV2			2
+ 
+ /* sleep */
+-#define SLP_CURR_MAX			6
+-#define SLP_CURR_MIN			4
++#define SLP_CURR_MAX			40
++#define SLP_CURR_MIN			6
++#define LOW_PWR_SLP_CURR_MAX		20
++#define LOW_PWR_SLP_CURR_MIN		1
+ #define DISCHRG_TIME_STEP1		MINUTE(10)
+ #define DISCHRG_TIME_STEP2		MINUTE(60)
+ #define SLP_DSOC_VOL_THRESD		3600
+@@ -165,8 +161,8 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
+ #define VIRTUAL_TEMPERATURE		188
+ #define VIRTUAL_STATUS			POWER_SUPPLY_STATUS_CHARGING
+ 
+-#define FINISH_CHRG_CUR1		300
+-#define FINISH_CHRG_CUR2		500
++#define FINISH_CHRG_CUR1		1000
++#define FINISH_CHRG_CUR2		1500
+ #define FINISH_MAX_SOC_DELAY		20
+ #define TERM_CHRG_DSOC			88
+ #define TERM_CHRG_CURR			600
+@@ -176,31 +172,6 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
+ #define SIMULATE_CHRG_K			1500
+ #define FULL_CHRG_K			400
+ 
+-#define BAT_ADC_DIFF 30
+-#define BAT_ADC_1024 1024
+-#define BAT_ADC_610 610    //15k
+-#define BAT_ADC_508 508   //10k
+-#define BAT_ADC_165 165   //2k
+-
+-enum bat_types {
+-	BAT_1024 = 0,
+-	BAT_610,
+-	BAT_508,
+-	BAT_165,
+-};
+-
+-enum ts_fun {
+-	TS_FUN_SOURCE_CURRENT,
+-	TS_FUN_VOLTAGE_INPUT,
+-};
+-
+-enum tscur_sel {
+-	FLOW_OUT_20uA,
+-	FLOW_OUT_40uA,
+-	FLOW_OUT_60uA,
+-	FLOW_OUT_80uA,
+-};
+-
+ enum work_mode {
+ 	MODE_ZERO = 0,
+ 	MODE_FINISH,
+@@ -237,28 +208,6 @@ enum rk817_output_mode {
+ 	INSTANT_MODE,
+ };
+ 
+-enum charge_current {
+-	CHRG_CUR_1000MA,
+-	CHRG_CUR_1500MA,
+-	CHRG_CUR_2000MA,
+-	CHRG_CUR_2500MA,
+-	CHRG_CUR_2750MA,
+-	CHRG_CUR_3000MA,
+-	CHRG_CUR_3500MA,
+-	CHRG_CUR_500MA,
+-};
+-
+-enum charge_voltage {
+-	CHRG_VOL_4100MV,
+-	CHRG_VOL_4150MV,
+-	CHRG_VOL_4200MV,
+-	CHRG_VOL_4250MV,
+-	CHRG_VOL_4300MV,
+-	CHRG_VOL_4350MV,
+-	CHRG_VOL_4400MV,
+-	CHRG_VOL_4450MV,
+-};
+-
+ enum rk817_battery_fields {
+ 	ADC_SLP_RATE, BAT_CUR_ADC_EN, BAT_VOL_ADC_EN,
+ 	USB_VOL_ADC_EN, TS_ADC_EN, SYS_VOL_ADC_EN, GG_EN, /*ADC_CONFIG0*/
+@@ -308,13 +257,13 @@ enum rk817_battery_fields {
+ 	BAT_R0, SOC_REG0, SOC_REG1, SOC_REG2,
+ 	REMAIN_CAP_REG2, REMAIN_CAP_REG1, REMAIN_CAP_REG0,
+ 	NEW_FCC_REG2, NEW_FCC_REG1, NEW_FCC_REG0,
+-	RESET_MODE, FIRST_RESET_FLAG,
++	RESET_MODE,
+ 	FG_INIT, HALT_CNT_REG, CALC_REST_REGL, CALC_REST_REGH,
+ 	VOL_ADC_B3,  VOL_ADC_B2, VOL_ADC_B1, VOL_ADC_B0,
+ 	VOL_ADC_K3, VOL_ADC_K2, VOL_ADC_K1, VOL_ADC_K0,
+ 	BAT_EXS, CHG_STS, BAT_OVP_STS, CHRG_IN_CLAMP,
+ 	CHIP_NAME_H, CHIP_NAME_L,
+-	PLUG_IN_STS, CHRG_EN,CHRG_CUR_SEL,CHRG_VOL_SEL,REGE9,VB_LO_SEL,
++	PLUG_IN_STS,
+ 	F_MAX_FIELDS
+ };
+ 
+@@ -461,7 +410,6 @@ static const struct reg_field rk817_battery_reg_fields[] = {
+ 	[NEW_FCC_REG1] = REG_FIELD(0xA1, 0, 7),
+ 	[NEW_FCC_REG2] = REG_FIELD(0xA2, 0, 7),
+ 	[RESET_MODE] = REG_FIELD(0xA3, 0, 3),
+-	[FIRST_RESET_FLAG] = REG_FIELD(0xA5, 0, 0),
+ 	[FG_INIT] = REG_FIELD(0xA5, 7, 7),
+ 
+ 	[HALT_CNT_REG] = REG_FIELD(0xA6, 0, 7),
+@@ -477,8 +425,6 @@ static const struct reg_field rk817_battery_reg_fields[] = {
+ 	[VOL_ADC_K2] = REG_FIELD(0xAE, 0, 7),
+ 	[VOL_ADC_K1] = REG_FIELD(0xAF, 0, 7),
+ 	[VOL_ADC_K0] = REG_FIELD(0xB0, 0, 7),
+-	[CHRG_EN] = REG_FIELD(0xE6, 6, 6),
+-
+ 	[BAT_EXS] = REG_FIELD(0xEB, 7, 7),
+ 	[CHG_STS] = REG_FIELD(0xEB, 4, 6),
+ 	[BAT_OVP_STS] = REG_FIELD(0xEB, 3, 3),
+@@ -486,10 +432,6 @@ static const struct reg_field rk817_battery_reg_fields[] = {
+ 	[CHIP_NAME_H] = REG_FIELD(0xED, 0, 7),
+ 	[CHIP_NAME_L] = REG_FIELD(0xEE, 0, 7),
+ 	[PLUG_IN_STS] = REG_FIELD(0xF0, 6, 6),
+-	[CHRG_CUR_SEL] = REG_FIELD(0xE4, 0, 2),
+-	[CHRG_VOL_SEL] = REG_FIELD(0xE4, 4, 6),
+-	[REGE9] = REG_FIELD(0xE9, 0, 7),
+-	[VB_LO_SEL] = REG_FIELD(0xf1, 0, 2),
+ };
+ 
+ struct battery_platform_data {
+@@ -536,14 +478,13 @@ struct battery_platform_data {
+ 	u32 bat_res_down;
+ 	u32 design_max_voltage;
+ 	bool extcon;
+-       
++	u32 low_pwr_sleep;
+ };
+ 
+ struct rk817_battery_device {
+ 	struct platform_device		*pdev;
+ 	struct device				*dev;
+ 	struct i2c_client			*client;
+-	struct iio_channel		*channel;
+ 	struct rk808			*rk817;
+ 	struct power_supply			*bat;
+ 	struct power_supply		*chg_psy;
+@@ -555,6 +496,7 @@ struct rk817_battery_device {
+ 	struct workqueue_struct		*bat_monitor_wq;
+ 	struct delayed_work		bat_delay_work;
+ 	struct delayed_work		calib_delay_work;
++	struct work_struct		resume_work;
+ 	struct wake_lock		wake_lock;
+ 	struct timer_list		caltimer;
+ 
+@@ -589,9 +531,6 @@ struct rk817_battery_device {
+ 	int				qmax;
+ 	int				dsoc;
+ 	int				rsoc;
+-	int				sleep_rsoc;
+-	int				soc_up_flag;
+-	int				soc_down_flag;
+ 	int				poffset;
+ 	int				fake_offline;
+ 	int				age_ocv_soc;
+@@ -685,13 +624,11 @@ struct rk817_battery_device {
+ 	int				plugout_irq;
+ 	int				chip_id;
+ 	int				is_register_chg_psy;
+-	u32 ntc_flag;
+-  int                                                    stop_smooth;
+-  int                           vb_lo_irq;
+-  int                           vb_lo_flag;
+-  int bat_type;
++	bool				change; /* Battery status change, report information */
+ };
+ 
++static void rk817_bat_resume_work(struct work_struct *work);
++
+ static u64 get_boot_sec(void)
+ {
+ 	struct timespec ts;
+@@ -775,6 +712,14 @@ static int rk817_bat_field_write(struct rk817_battery_device *battery,
+ 	return regmap_field_write(battery->rmap_fields[field_id], val);
+ }
+ 
++static bool rk817_is_bat_exist(struct rk817_battery_device *battery)
++{
++	if (battery->chip_id == RK817_ID)
++		return rk817_bat_field_read(battery, BAT_EXS) ? true : false;
++
++	return true;
++}
++
+ /*cal_offset: current offset value*/
+ static int rk817_bat_get_coffset(struct rk817_battery_device *battery)
+ {
+@@ -807,474 +752,6 @@ static int rk817_bat_get_ioffset(struct rk817_battery_device *battery)
+ 	return ioffset_value;
+ }
+ 
+-static int rk817_bat_get_vaclib0(struct rk817_battery_device *battery)
+-{
+-	int vcalib_value = 0;
+-
+-	vcalib_value |= rk817_bat_field_read(battery, VCALIB0_H) << 8;
+-	vcalib_value |= rk817_bat_field_read(battery, VCALIB0_L);
+-
+-	return vcalib_value;
+-}
+-
+-static int rk817_bat_get_vaclib1(struct rk817_battery_device *battery)
+-{
+-	int vcalib_value = 0;
+-
+-	vcalib_value |= rk817_bat_field_read(battery, VCALIB1_H) << 8;
+-	vcalib_value |= rk817_bat_field_read(battery, VCALIB1_L);
+-
+-	return vcalib_value;
+-}
+-
+-static int rk817_bat_get_bat_ts(struct rk817_battery_device *battery)
+-{
+-	int temp_value = 0;
+-
+-	temp_value = rk817_bat_field_read(battery, BAT_TS_H) << 8;
+-	temp_value |= rk817_bat_field_read(battery, BAT_TS_L);
+-
+-	return temp_value;
+-}
+-
+-
+-static int old_tempture = -1000;
+-static int rk817_bat_get_charge_status(struct rk817_battery_device *battery);
+-static int ntc_res;
+-static int fix_flag;
+-static int ntc_data[3] = {0, 0, 0};
+-
+-#if 1
+-static int rk817_bat_check_ntc_res(struct rk817_battery_device *battery, int ntc_res)
+-{
+-	static int i;
+-	int temp;
+-
+-
+-	DBG("YYYYYYYY: ntc_data[0] : %d, ntc_data[1]: %d, ntc_data[2]: %d\n", ntc_data[0], ntc_data[1], ntc_data[2]);
+-
+-#if 0
+-	if ((ntc_data[0] != 0) && (ntc_data[1] != 0) && (ntc_data[2] != 0)) {
+-		temp = (ntc_data[0] + ntc_data[1] + ntc_data[2]) / 3;
+-		if (battery->temperature < 450) {
+-			if ((2 * ntc_res < temp) || (abs(ntc_res - temp) > 3000)) {
+-				printk("ntc_res error: %d\n", ntc_res);
+-				return temp;
+-			}
+-		} else {
+-			if ((2 * ntc_res < temp) || (abs(ntc_res - temp) > 400)) {
+-				printk("ntc_res error: %d\n", ntc_res);
+-				return temp;
+-			}
+-		}
+-	}
+-
+-	if ((ntc_data[0] != 0) && (ntc_data[1] != 0) && (ntc_data[2] == 0)) {
+-		temp = (ntc_data[0] + ntc_data[1] + ntc_data[2]) / 2;
+-		if (battery->temperature < 450) {
+-			if ((2 * ntc_res < temp) || (abs(ntc_res - temp) > 3000)) {
+-				printk("ntc_res error: %d\n", ntc_res);
+-				return temp;
+-			}
+-		} else {
+-			if ((2 * ntc_res < temp) || (abs(ntc_res - temp) > 400)) {
+-				printk("ntc_res error: %d\n", ntc_res);
+-				return temp;
+-			}
+-		}
+-	}
+-
+-	if ((ntc_data[0] != 0) && (ntc_data[1] == 0) && (ntc_data[2] == 0)) {
+-		temp = (ntc_data[0] + ntc_data[1] + ntc_data[2]) / 1;
+-		if (battery->temperature < 450) {
+-			if ((2 * ntc_res < temp) || (abs(ntc_res - temp) > 3000)) {
+-				printk("ntc_res error: %d\n", ntc_res);
+-				return temp;
+-			}
+-		} else {
+-			if ((2 * ntc_res < temp) || (abs(ntc_res - temp) > 400)) {
+-				printk("ntc_res error: %d\n", ntc_res);
+-				return temp;
+-			}
+-		}
+-	}
+-
+-#endif
+-	ntc_data[i%3] = ntc_res;
+-
+-	if (i < 2)
+-		i++;
+-	else 
+-		i = 0;
+-
+-	temp = (ntc_data[0] + ntc_data[1] + ntc_data[2]) / 3;
+-	//DBG("i: %d, ntc_data[0]: %d, ntc_data[1]: %d, ntc_data[2]: %d, ntc_res: %d ,temp: %d\n",
+-	//	i, ntc_data[0], ntc_data[1],ntc_data[2], ntc_res, temp);
+-	DBG("i: %d, ntc_data[0]: %d, ntc_data[1]: %d, ntc_data[2]: %d, ntc_res: %d ,temp: %d\n",
+-	i, ntc_data[0], ntc_data[1],ntc_data[2], ntc_res, temp);
+-	
+-	if ((ntc_data[0] != 0) && (ntc_data[1] != 0) && (ntc_data[2] != 0)){
+-		if(ntc_data[0] > (ntc_data[1] + ntc_data[2])
+-			|| ntc_data[1] > (ntc_data[0] + ntc_data[2]))
+-			return ntc_data[2];
+-		else if (ntc_data[2] > (ntc_data[0] + ntc_data[1]))
+-			return ntc_data[1];
+-		else
+-			return (ntc_data[0] + ntc_data[1] + ntc_data[2]) / 3;
+-	}
+-	else
+-		return ntc_res;
+-
+-#if 0
+-	if((i == 0) && (ntc_data[i] == 0)) {
+-		ntc_data[i]= ntc_rest;
+-		return ntc_data[i];
+-	}
+-
+-#endif
+-}
+-#endif
+-
+-
+-static int rk817_bat_get_nts_res(struct rk817_battery_device *battery)
+-{
+-	int vcalib0, vcalib1, voltage_k, voltage_b;
+-	int bat_ts_vol, temp_value, res, value_avg;
+-	static int ntc_temp_flag;
+-
+-	vcalib0 = rk817_bat_get_vaclib0(battery);
+-	vcalib1 =  rk817_bat_get_vaclib1(battery);
+-
+-	voltage_k = (1050 - 600) * 1000 / DIV(vcalib1 - vcalib0);
+-	voltage_b = 1050 - (voltage_k * vcalib1) / 1000;
+-
+-	temp_value = rk817_bat_get_bat_ts(battery);
+-	DBG("+++aa++thzy+++++ adc value: 0x%x\n", temp_value);
+-	DBG("xxxxxxxxxxxxxtemperature:%d  K : %d  b: 0x%x\n", battery->temperature,voltage_k, voltage_b);
+-
+-	bat_ts_vol = (voltage_k * temp_value / 1000 + voltage_b) * 1000 / 1007;
+-
+-	DBG("++++++++++++ bat_ts_vol: %d\n", bat_ts_vol);
+-
+-	res = bat_ts_vol * 10000 / battery->pdata->ntc_factor;
+-
+-
+-	if ((res < 1000) || (res > 45000)) {
+-		printk("res: res: %d, res < 1000) || res > 60000\n", res);
+-		return 0;
+-	}
+-//	
+-    DBG("+++++++++res: %d\n", res);
+-
+-	value_avg = rk817_bat_check_ntc_res(battery, res);
+-
+-	if (ntc_temp_flag == 1) {
+-		ntc_res = res;
+-		ntc_temp_flag = 0;
+-	}
+-
+-	if (ntc_res == 0) {
+-		ntc_res = res;
+-		ntc_temp_flag = 1;
+-	}
+-
+-#if 1
+-	if (1) {//(battery->temperature > 450) { 
+-	//	if(abs(ntc_res - value_avg) > 400) {
+-	
+-	//if(/*((value_avg < 5000) && abs(ntc_res - value_avg) > 400) || */((value_avg < 5000) && abs(ntc_res - value_avg) > 400)) {
+-//	if(/*((value_avg < 5000) && abs(ntc_res - value_avg) > 400) || */((value_avg < 5000) && abs(ntc_res - value_avg) > 400)) {
+-
+-		if((ntc_res < 5000) && (value_avg < 5000) && (abs(ntc_res - value_avg) > 400)) {
+-			fix_flag = 0;
+-			res = ntc_res;
+-			
+-		} else {
+-			fix_flag ++;
+-			//if (fix_flag >= 3) 
+-				{
+-				 ntc_res = value_avg;
+-				//ntc_res = res;
+-				 res = ntc_res;
+-				fix_flag = 0;
+-			}
+-		}
+-		DBG("++++++++++++++++++++++++++++ntc_res++++++%d\n", res);
+-	} else	{
+-		#if 0
+-		if (ntc_res != 0) {
+-			if ((2 * res < ntc_res) || (2 * ntc_res < res))
+-				res = ntc_res;
+-			else
+-				ntc_res = res;
+-		}
+-		#endif
+-		ntc_res = value_avg;
+-		res = value_avg;
+-		//ntc_res = res;
+-	}
+-    DBG("+++++++++ntc_res: %d, res: %d, avle_avg: %d\n", ntc_res, res, value_avg);
+-
+-
+-	DBG("0000000000000000000000000 the use tempture res: %d\n", res);
+-
+-	
+-if (rk817_bat_get_charge_status(battery) != CC_OR_CV_CHRG) {
+-        if (abs(old_tempture - battery->temperature) > 10) {
+-                DBG("check temerature...........................................\n");
+-                old_tempture = battery->temperature;
+-
+-		if (battery->temperature < 120)
+-			battery->pdata->ntc_factor = ((battery->temperature - 40) + 5) / 10 + 200;
+-		else if ((battery->temperature >= 120) && (battery->temperature <= 280))
+-			battery->pdata->ntc_factor = 218;
+-		else if (battery->temperature > 280)
+-			battery->pdata->ntc_factor = ((battery->temperature - 280) + 5) / 10 + 217;
+-
+-		DBG("4..xxxxxxxx...discharge...........: %d\n", battery->pdata->ntc_factor);
+-        }    
+-} else {
+-		if (abs(old_tempture - battery->temperature) > 20) {
+-
+-			DBG("check temerature...........................................\n");
+-			old_tempture = battery->temperature;
+-
+-			if (battery->temperature < 120) 
+-				battery->pdata->ntc_factor = ((battery->temperature - 40) + 5) / 10 + 200; 
+-			else if ((battery->temperature >= 120) && (battery->temperature <= 280))
+-				battery->pdata->ntc_factor = 210; 
+-			else if (battery->temperature > 280) {
+-				if (battery->current_avg > 1000)
+-					battery->pdata->ntc_factor = ((battery->temperature - 280) + 5) / 10 + 228 + (battery->current_avg - 1000)/10; 
+-				else
+-					battery->pdata->ntc_factor = ((battery->temperature - 280) + 5) / 10 + 228; 
+-				
+-			}
+-			DBG("1..xxxxxxxx...discharge...........: %d\n", battery->pdata->ntc_factor);
+-		}    
+-			DBG("1..xxxxxxxx...charge..........: %d\n", battery->pdata->ntc_factor);
+-		}
+-
+-		DBG("set ntc factor...........: %d\n", battery->pdata->ntc_factor);
+-#endif
+-	DBG("****************change tscur********************\n");
+-
+-	return res;
+-}
+-
+-static void rk817_bat_init_ts_detect(struct rk817_battery_device *battery)
+-{
+-	return;
+-	if (battery->pdata->ntc_size)
+-		return;
+-		
+-	/* the adc of ts1 controlled bit: enable */
+-	rk817_bat_field_write(battery, TS_ADC_EN, ENABLE);
+-	/* source current to TS pin */
+-	rk817_bat_field_write(battery, TS_FUN, TS_FUN_SOURCE_CURRENT);
+-	/* ts pin flow out current in active state */
+-//	rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, FLOW_OUT_60uA);
+-	//battery->pdata->ntc_factor = 29;
+-	rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, FLOW_OUT_40uA);
+-	battery->pdata->ntc_factor = 200;
+-	DBG("\n\n======rk817_bat_init_ts_detect REGE9 ======\n\n");
+-	rk817_bat_field_write(battery, REGE9, 0xAA);	//7d
+-	DBG("\n\n====== REGE9 ====== 0x%x\n",
+-	    rk817_bat_field_read(battery, REGE9));
+-}
+-static int is_bat_charge_en(struct rk817_battery_device *battery)
+-{
+-	return rk817_bat_field_read(battery, CHRG_EN);
+-}
+-/*
+-
+-static void rk817_bat_enable_charge(struct rk817_battery_device *battery)
+-{
+-	//DBG("\n\n======rk817_bat_enable_charge======\n\n");
+-	rk817_bat_field_write(battery, CHRG_EN, ENABLE);
+-	power_supply_changed(battery->bat);
+-}
+-
+-static void rk817_bat_disable_charge(struct rk817_battery_device *battery)
+-{
+-	//DBG("\n\n======rk817_bat_disable_charge======\n\n");
+-	rk817_bat_field_write(battery, CHRG_EN, DISABLE);
+-	power_supply_changed(battery->bat);
+-}
+-*/
+-static int  charge_flag;
+-static int voltage_count;
+-static void rk817_bat_update_temperature(struct rk817_battery_device *battery)
+-{
+-	u32 ntc_size, *ntc_table;
+-	int i, res,status;
+-	int voltage;
+-
+-	return;
+-	if (battery->pdata->ntc_size)
+-		return;
+- 
+-	ntc_table = battery->pdata->ntc_table;
+-	ntc_size = battery->pdata->ntc_size;
+-
+-	if (ntc_size) {
+-		res = rk817_bat_get_nts_res(battery);
+-		if(res == 0)
+-			return;
+-
+-		if (res < ntc_table[ntc_size - 1]) {
+-			battery->temperature = 650;
+-			DBG("bat ntc upper max degree: R=%d\n", res);
+-		} else if (res > ntc_table[0]) {
+-			battery->temperature = -100;
+-			DBG("bat ntc lower min degree: R=%d\n", res);
+-		} else {
+-			for (i = 0; i < ntc_size; i++) {
+-				if (res >= ntc_table[i])
+-					break;
+-			}
+-
+-			if (i <= 0)
+-				battery->temperature = (battery->pdata->ntc_degree_from) * 10;
+-			else
+-				battery->temperature = (i + battery->pdata->ntc_degree_from) * 10;
+-
+-		}
+-		if (old_tempture == -1000)
+-			old_tempture = battery->temperature;
+-	}
+-
+-	DBG("thzy 2222 [battery] res=%d i=%d temp=%d chrg_status:%d  bat_charge_en:%d\n", res, i, battery->temperature, battery->chrg_status, is_bat_charge_en(battery));
+-	if ((battery->temperature <= 0) || (battery->temperature >= 550)) {
+-		if (is_bat_charge_en(battery)) {
+-			DBG("thzy rk817_bat_disable_charge\n");
+-			if (battery->temperature >= 550) {
+-					rk817_bat_field_write(battery, REGE9,0x05);
+-                            status = rk817_bat_field_read(battery, CHG_STS);
+-                            DBG("temperature >= 600CHG_STS status:%d -- %d\n",status,CHARGE_FINISH);
+-                            if ((status == CHARGE_FINISH)  || ((status != CHRG_OFF) && (battery->current_avg < 10) && (battery->current_avg > -10)))
+-                                    battery->stop_smooth = 1;
+-                            else
+-                                    battery->stop_smooth = 0;     
+-			 } else {
+-				if (battery->temperature <= 0) {
+-					rk817_bat_field_write(battery, REGE9,
+-							      0x05);
+-					DBG("\n\n=temperature <= 0 aa REGE9 ====== 0x%x\n", rk817_bat_field_read(battery, REGE9));
+-				}
+-				if ((battery->temperature <= 0)
+-				    && (battery->current_avg < 10)
+-				    && (battery->current_avg > -10)) {
+-					battery->stop_smooth = 1;
+-					rk817_bat_field_write(battery, REGE9, 0x05);	//7d
+-					DBG("\n\n= temperature <= 0 bb REGE9 ====== 0x%x\n", rk817_bat_field_read(battery, REGE9));
+-					DBG(" temperature <= 0 stop smooth.....................\n");
+-				} else
+-					battery->stop_smooth = 0;
+-			}
+-		}
+-	} else {
+-	
+-		//if (!is_bat_charge_en(battery))
+-		//	if (g_charge_status == 1)
+-		//		rk817_bat_enable_charge(battery);
+-
+-		battery->ntc_flag = 0;
+-		if (battery->chrg_status != CHRG_OFF) {
+-			voltage =
+-			    battery->voltage_avg -
+-			    (battery->current_avg * battery->bat_res / 1000);
+-			if (battery->temperature <= 0) {
+-				rk817_bat_field_write(battery, REGE9, 0x05);
+-				DBG("\n\nREGE9 ====== 0x%x\n",
+-				    rk817_bat_field_read(battery, REGE9));
+-			}
+-
+-			if ((battery->temperature <= 0)
+-			    && (battery->current_avg < 10)
+-			    && (battery->current_avg > -10)) {
+-					battery->stop_smooth = 1;
+-					rk817_bat_field_write(battery, REGE9, 0x05);	//7d
+-				 	DBG("\n\ntop smooth REGE9 ====== 0x%x\n",
+-					     rk817_bat_field_read(battery, REGE9));
+-			} else
+-				battery->stop_smooth = 0;
+-
+-			if ((battery->temperature >= 30) && (battery->temperature <= 520)){
+-				//rk817_bat_disable_charge(battery);
+-				rk817_bat_field_write(battery, REGE9, 0xFA);
+-				//rk817_bat_enable_charge(battery);
+-				DBG("\n\n enable REGE9 0x%x\n",
+-				    rk817_bat_field_read(battery, REGE9));
+-			}
+-
+-
+-		if ((battery->temperature <= 100)
+-			    && (battery->temperature > 0)) {
+-				DBG("thzy ntc set CHRG_CUR_200MA\n");
+-				rk817_bat_field_write(battery, CHRG_CUR_SEL,
+-						      CHRG_CUR_500MA);
+-				rk817_bat_field_write(battery, CHRG_VOL_SEL,
+-							      CHRG_VOL_4450MV);
+-			} else if ((battery->temperature <= 200)
+-				   && (battery->temperature > 100)) {
+-				   DBG("100 200ntc set CHRG_CUR_1000MA\n");
+-				   rk817_bat_field_write(battery,
+-							      CHRG_CUR_SEL,
+-							      CHRG_CUR_1000MA);
+-				   rk817_bat_field_write(battery, CHRG_VOL_SEL,
+-							      CHRG_VOL_4450MV);
+-			} else if((battery->temperature <= 450)
+-				   && (battery->temperature > 200)) {
+-				    DBG("200 450ntc set CHRG_CUR..........\n");
+-					//if (battery->current_avg > 700) && 
+-					//	(rk817_bat_field_read(battery, CHRG_VOL_SEL) == CHRG_VOL_4200MV)
+-
+-					//(rk817_bat_field_read(battery, CHRG_CUR_SEL) != CHRG_CUR_1500MA)&&
+-					
+-					//(rk817_bat_field_read(battery, CHRG_VOL_SEL) == CHRG_VOL_4450MV) &&
+-					if (((battery->voltage_avg < 4190) && (charge_flag == 0)) && (battery->dsoc / 1000 < 70)) {
+-                                        charge_flag = 0;
+-                                        voltage_count = 0;
+-                                         if ((battery->voltage_avg) <= 3500)
+-      						rk817_bat_field_write(battery,
+-									 CHRG_CUR_SEL,
+-									 CHRG_CUR_1500MA);
+-  
+-                                        else
+-						rk817_bat_field_write(battery,
+-										 CHRG_CUR_SEL,
+-										 CHRG_CUR_2000MA);
+-					} else {
+-                                        if ((charge_flag == 1) || (battery->dsoc / 1000 >= 70))
+-						rk817_bat_field_write(battery,
+-									 CHRG_CUR_SEL,
+-									 CHRG_CUR_1500MA);
+-                                        if (voltage_count > 10)
+-						charge_flag = 1;
+-					voltage_count ++;
+-
+-				    }
+-
+-					rk817_bat_field_write(battery, CHRG_VOL_SEL,
+-								 CHRG_VOL_4450MV);
+-
+-			 }else if ((battery->temperature <= 550)
+-				   && (battery->temperature > 450)) {
+-				    DBG("450 550ntc set CHRG_CUR_1000MA\n");
+-				    rk817_bat_field_write(battery,
+-							      CHRG_CUR_SEL,
+-							      CHRG_CUR_1000MA);
+-					rk817_bat_field_write(battery, CHRG_VOL_SEL,
+-								 CHRG_VOL_4100MV);
+-			}
+-
+-
+-		} else
+-			battery->stop_smooth = 0;
+-	}
+-}
+-
+ static void rk817_bat_current_calibration(struct rk817_battery_device *battery)
+ {
+ 	int pwron_value, ioffset, cal_offset;
+@@ -1296,6 +773,26 @@ static void rk817_bat_current_calibration(struct rk817_battery_device *battery)
+ 
+ }
+ 
++static int rk817_bat_get_vaclib0(struct rk817_battery_device *battery)
++{
++	int vcalib_value = 0;
++
++	vcalib_value |= rk817_bat_field_read(battery, VCALIB0_H) << 8;
++	vcalib_value |= rk817_bat_field_read(battery, VCALIB0_L);
++
++	return vcalib_value;
++}
++
++static int rk817_bat_get_vaclib1(struct rk817_battery_device *battery)
++{
++	int vcalib_value = 0;
++
++	vcalib_value |= rk817_bat_field_read(battery, VCALIB1_H) << 8;
++	vcalib_value |= rk817_bat_field_read(battery, VCALIB1_L);
++
++	return vcalib_value;
++}
++
+ static void rk817_bat_init_voltage_kb(struct rk817_battery_device *battery)
+ {
+ 	int vcalib0, vcalib1;
+@@ -1303,15 +800,11 @@ static void rk817_bat_init_voltage_kb(struct rk817_battery_device *battery)
+ 	vcalib0 = rk817_bat_get_vaclib0(battery);
+ 	vcalib1 =  rk817_bat_get_vaclib1(battery);
+ 	if (battery->chip_id == RK809_ID) {
+-		battery->voltage_k =
+-		    (1050 - 600) * 1000 / DIV(vcalib1 - vcalib0);
+-		battery->voltage_b =
+-		    1050 - (battery->voltage_k * vcalib1) / 1000;
++		battery->voltage_k = (1050 - 600) * 1000 / DIV(vcalib1 - vcalib0);
++		battery->voltage_b = 1050 - (battery->voltage_k * vcalib1) / 1000;
+ 	} else {
+-		battery->voltage_k =
+-		    (4025 - 2300) * 1000 / DIV(vcalib1 - vcalib0);
+-		battery->voltage_b =
+-		    4025 - (battery->voltage_k * vcalib1) / 1000;
++		battery->voltage_k = (4025 - 2300) * 1000 / DIV(vcalib1 - vcalib0);
++		battery->voltage_b = 4025 - (battery->voltage_k * vcalib1) / 1000;
+ 	}
+ }
+ 
+@@ -1642,14 +1135,7 @@ static u32 rk817_bat_get_capacity_uah(struct rk817_battery_device *battery)
+ 		capacity = ADC_TO_CAPACITY_UAH(val, battery->res_div);
+ 	}
+ 
+-	DBG("value = 0x%x\n", val);
+-		val = rk817_bat_field_read(battery, Q_PRESS_H3) << 24;
+-		val |= rk817_bat_field_read(battery, Q_PRESS_H2) << 16;
+-		val |= rk817_bat_field_read(battery, Q_PRESS_L1) << 8;
+-		val |= rk817_bat_field_read(battery, Q_PRESS_L0) << 0;
+-	DBG("xxxxxxxxxxxxxxvalue = 0x%x\n", val);
+-
+-	DBG("20190621 capacity = %d\n", capacity);
++	DBG("xxxxxxxxxxxxx capacity = %d\n", capacity);
+ 	return  capacity;
+ }
+ 
+@@ -1670,7 +1156,7 @@ static u32 rk817_bat_get_capacity_mah(struct rk817_battery_device *battery)
+ 	DBG("Q_PRESS_H1 = 0x%x\n", rk817_bat_field_read(battery, Q_PRESS_L1));
+ 	DBG("Q_PRESS_H0 = 0x%x\n", rk817_bat_field_read(battery, Q_PRESS_L0));
+ 
+-	DBG("20190619 capacity = %d\n", capacity);
++	DBG("xxxxxxxxxxxxx capacity = %d\n", capacity);
+ 	return  capacity;
+ }
+ 
+@@ -1846,7 +1332,8 @@ static void rk817_bat_save_dsoc(struct rk817_battery_device *battery,
+ 	static int last_soc = -1;
+ 
+ 	if (last_soc != save_soc) {
+-		rk817_bat_field_write(battery, SOC_REG0, save_soc & 0xff);
++		rk817_bat_field_write(battery, SOC_REG0,
++				      save_soc & 0xff);
+ 		rk817_bat_field_write(battery, SOC_REG1,
+ 				      (save_soc >> 8) & 0xff);
+ 		rk817_bat_field_write(battery, SOC_REG2,
+@@ -1879,13 +1366,13 @@ static bool is_rk817_bat_first_pwron(struct rk817_battery_device *battery)
+ 
+ static int rk817_bat_get_charge_status(struct rk817_battery_device *battery)
+ {
+-	int status, value;
++	int status;
+ 
+ 	if (battery->chip_id == RK809_ID) {
+-		if ((battery->voltage_avg > battery->pdata->design_max_voltage)
+-		    && (battery->current_avg > 0)
+-		    && ((battery->current_avg < 500)
+-			|| (battery->rsoc / 1000 == 100)))
++		if ((battery->voltage_avg > battery->pdata->design_max_voltage) &&
++		    (battery->current_avg > 0) &&
++		    ((battery->current_avg < 500) ||
++		     (battery->rsoc / 1000 == 100)))
+ 			return CHARGE_FINISH;
+ 
+ 		if (battery->plugin_trigger)
+@@ -1894,28 +1381,9 @@ static int rk817_bat_get_charge_status(struct rk817_battery_device *battery)
+ 			return CHRG_OFF;
+ 	}
+ 	status = rk817_bat_field_read(battery, CHG_STS);
+-	if (status == CHARGE_FINISH) {
+-		value = rk817_bat_field_read(battery, FIRST_RESET_FLAG);
+-		if (rk817_bat_field_read(battery, CHRG_VOL_SEL) == CHRG_VOL_4450MV)
+-			rk817_bat_field_write(battery, FIRST_RESET_FLAG, value & 0xfe);
+-		else
+-			rk817_bat_field_write(battery, FIRST_RESET_FLAG, value & 0x01);
+-	}
+-#if 0
+-	if ((status == CHARGE_FINISH) && (rk817_bat_field_read(battery, CHRG_VOL_SEL) == CHRG_VOL_4400MV)) {
+-		rk817_bat_field_write(battery, CHRG_VOL_SEL,  CHRG_VOL_4350MV);
+-		DBG("4350mv..........................\n");
+-		
+-	
+-	}else if (rk817_bat_field_read(battery, CHRG_VOL_SEL) == CHRG_VOL_4350MV){
+-		if ((battery->voltage_avg < 4350) && (status != CHRG_OFF)) {
+-			rk817_bat_field_write(battery, CHRG_VOL_SEL, CHRG_VOL_4400MV);
+-			DBG("set 4400mv...........................\n");
+-		}
+-	}
+-#endif
++
+ 	if (status == CC_OR_CV_CHRG) {
+-		if (((battery->rsoc + 500) / 1000 == 100)  || (battery->dsoc / 1000 == 99)){
++		if (battery->rsoc == 100 * 1000) {
+ 			DBG("charge to finish\n");
+ 			status = CHARGE_FINISH;
+ 		}
+@@ -1959,9 +1427,9 @@ static int rk817_bat_get_charge_status(struct rk817_battery_device *battery)
+  */
+ static bool rk817_bat_fake_finish_mode(struct rk817_battery_device *battery)
+ {
+-	if (((battery->rsoc + 500) / 1000 == 100) &&
++	if ((battery->rsoc == 100) &&
+ 	    (rk817_bat_get_charge_status(battery) == CC_OR_CV_CHRG) &&
+-	    (abs(battery->current_avg) <= 200))
++	    (abs(battery->current_avg) <= 100))
+ 		return true;
+ 	else
+ 		return false;
+@@ -2005,7 +1473,8 @@ static void rk817_bat_init_info(struct rk817_battery_device *battery)
+ 	battery->qmax = battery->pdata->design_qmax;
+ 	battery->bat_res = battery->pdata->bat_res;
+ 	battery->monitor_ms = battery->pdata->monitor_sec * TIMER_MS_COUNTS;
+-	battery->res_div = battery->pdata->sample_res;
++	battery->res_div = (battery->pdata->sample_res == SAMPLE_RES_20MR) ?
++		       SAMPLE_RES_DIV2 : SAMPLE_RES_DIV1;
+ 	DBG("battery->qmax :%d\n", battery->qmax);
+ }
+ 
+@@ -2050,7 +1519,7 @@ static bool is_rk817_bat_last_halt(struct rk817_battery_device *battery)
+ static u8 is_rk817_bat_initialized(struct rk817_battery_device *battery)
+ {
+ 	u8 val = rk817_bat_field_read(battery, FG_INIT);
+-	DBG("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx: val: %d\n", val);
++
+ 	if (val) {
+ 		rk817_bat_field_write(battery, FG_INIT, 0x00);
+ 		return true;
+@@ -2058,104 +1527,32 @@ static u8 is_rk817_bat_initialized(struct rk817_battery_device *battery)
+ 		return false;
+ 	}
+ }
+-static int lower_power_check;
+ 
+ static void rk817_bat_calc_sm_linek(struct rk817_battery_device *battery)
+ {
+ 	int linek;
+ 	int diff, delta;
+-	int ocv_voltage, ocv_soc, first_on_flag, ocv_cap;
+ 	int current_avg = rk817_bat_get_avg_current(battery);
+ 
+-	first_on_flag = rk817_bat_field_read(battery, FIRST_RESET_FLAG);
+-
+-	ocv_voltage = battery->voltage_avg - (current_avg * 150) / 1000;
+-	ocv_soc = rk817_bat_vol_to_soc(battery, ocv_voltage);
+-
+ 	delta = abs(battery->dsoc - battery->rsoc);
+ 	diff = delta * 3;/* speed:3/4 */
+ 
+ 	if (current_avg > 0) {
+-		if (battery->dsoc /1000 < battery->rsoc /1000)
++		if (battery->dsoc < battery->rsoc)
+ 			linek = 1000 * (delta + diff) / DIV(diff);
+-		else if (battery->dsoc / 1000 > battery->rsoc / 1000)
++		else if (battery->dsoc > battery->rsoc)
+ 			linek = 1000 * diff / DIV(delta + diff);
+ 		else
+ 			linek = 1000;
+ 	} else {
+-		if (battery->dsoc / 1000 < battery->rsoc / 1000)
++		if (battery->dsoc < battery->rsoc)
+ 			linek = -1000 * diff / DIV(delta + diff);
+-		else if (battery->dsoc / 1000 > battery->rsoc / 1000)
++		else if (battery->dsoc > battery->rsoc)
+ 			linek = -1000 * (delta + diff) / DIV(diff);
+ 		else
+ 			linek = -1000;
+ 	}
+ 
+-	if (battery->dsoc > battery->rsoc + 8000)
+-		 rk817_bat_field_write(battery, FIRST_RESET_FLAG, 0x01);
+-	//printk("first_on_flag: %d\n", first_on_flag);
+-
+-
+-	if (((first_on_flag & 0x01) == 0x0) && (battery->current_avg < 0) && (ocv_soc <= 5) && ((battery->dsoc / 1000) > ocv_soc +2)){
+-		linek = -1 * battery->dsoc / DIV(ocv_soc);
+-		if (linek < -2000)
+-			linek = -2000;
+-		printk("battery->dsoc / 1000  > ocv_soc +2..............linek: %d\n", linek);
+-	}
+-
+-
+-	if (((first_on_flag & 0x01) == 0x0) && (battery->current_avg < 0) && (ocv_soc <= 5) && ((battery->rsoc / 1000 +3) < ocv_soc)){
+-		printk("first_on_flag =0 rsoc < ocv_soc ..........\n");
+-		ocv_cap = rk817_bat_vol_to_cap(battery, ocv_voltage);
+-		rk817_bat_init_coulomb_cap(battery, battery->fcc * 10 / 100 + 12);
+-		rk817_bat_init_coulomb_cap(battery, battery->fcc * 10 / 100 - 3);				
+-		DBG("cap checkxxxxxxxxxxxxxxxxxxxxxxx %d\n", rk817_bat_get_capacity_mah(battery));
+-	}
+-
+-	if (((first_on_flag & 0x01) == 0x1)&& (battery->current_avg < 0) && (battery->rsoc + 2000 >  battery->dsoc))  {
+-			if ((ocv_soc > 0) && (ocv_soc < battery->rsoc / 1000) && (ocv_soc < battery->dsoc / 1000)) {
+-				linek = -1 * battery->dsoc / DIV(ocv_soc);
+-				DBG("ocv check..............linek: %d\n", linek);
+-			} else {
+-				if ((battery->rsoc / 1000 < 3) && (ocv_soc > battery->rsoc / 1000)){
+-					printk("rsoc < ocv_soc ..........\n");
+-					ocv_cap = rk817_bat_vol_to_cap(battery, ocv_voltage);
+-					rk817_bat_init_coulomb_cap(battery, battery->fcc * 10 / 100 + 12);
+-					rk817_bat_init_coulomb_cap(battery, battery->fcc * 10 / 100 - 3);				
+-					DBG("0514xxxxxxxxxxxxxxxxxxxxxxx %d\n", rk817_bat_get_capacity_mah(battery));
+-				}
+-				if (ocv_soc > battery->dsoc / 1000)
+-					linek = -880;
+-				else
+-					linek = -1000;
+-		
+-				if (ocv_soc <= 1)
+-					 linek = -2000;
+-				//printk("ocv check else..............linek: %d\n", linek);
+-			}
+-	}
+-
+-	if (current_avg > 0)
+-		lower_power_check = 0;
+-
+-	if ((lower_power_check == 1) ||
+-	   ((battery->voltage_avg <= 3550) && (battery->current_avg < 0) && (battery->dsoc / 1000 >= 2) && (linek > -2000))){
+-			if ((battery->current_avg < -300) || (battery->voltage_avg >= 3550)) {
+-                            if (linek  > -1000)
+-                                linek = -1000;
+-                            else
+-				    linek = -1500;
+-			} else {
+-					linek = -2000;
+-			}
+-
+-		lower_power_check = 1;
+-	}
+-
+-	//DBG("lower_power_check: %d, linek: %d battery->dsoc / 1000: %d, battery->rsoc / 1000\n",
+-	//	lower_power_check, linek, battery->dsoc / 1000, battery->rsoc / 1000);
+-
+-
+ 	battery->dbg_meet_soc = (battery->dsoc >= battery->rsoc) ?
+ 		(battery->dsoc - diff) : (battery->rsoc - diff);
+ 
+@@ -2218,8 +1615,6 @@ static void rk817_bat_first_pwron(struct rk817_battery_device *battery)
+ 	    __func__, battery->rsoc, battery->dsoc, battery->fcc, battery->nac);
+ }
+ 
+-static void rk817_charge_cap_smooth_init(struct rk817_battery_device *battery);
+-
+ static void rk817_bat_not_first_pwron(struct rk817_battery_device *battery)
+ {
+ 	int now_cap, pre_soc, pre_cap, ocv_cap, ocv_soc, ocv_vol;
+@@ -2356,7 +1751,6 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
+ 	rk817_bat_init_caltimer(battery);
+ 	rk817_bat_rsoc_init(battery);
+ 	rk817_bat_init_coulomb_cap(battery, battery->nac);
+-	rk817_bat_init_ts_detect(battery);
+ 	DBG("rsoc%d, fcc = %d\n", battery->rsoc, battery->fcc);
+ 	rk817_bat_init_dsoc_algorithm(battery);
+ 	battery->qmax = rk817_bat_get_qmax(battery);
+@@ -2370,10 +1764,6 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
+ 	battery->dbg_pwr_rsoc = battery->rsoc;
+ 	battery->dbg_pwr_vol = battery->voltage_avg;
+ 	battery->temperature = VIRTUAL_TEMPERATURE;
+-	battery->soc_up_flag = 0;
+-	battery->soc_down_flag = 0;
+-              battery->stop_smooth = 0;
+-	rk817_charge_cap_smooth_init(battery);
+ 
+ 	DBG("probe init: battery->dsoc = %d, rsoc = %d\n"
+ 	    "remain_cap = %d\n, battery_vol = %d\n, system_vol = %d, qmax = %d\n",
+@@ -2472,7 +1862,6 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
+ 
+ 	ret = of_property_read_u32(np, "zero_algorithm_vol",
+ 				   &pdata->zero_algorithm_vol);
+-	pdata->zero_algorithm_vol += 90;
+ 	if (ret < 0)
+ 		dev_err(dev, "zero_algorithm_vol missing!\n");
+ 
+@@ -2485,6 +1874,8 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
+ 	ret = of_property_read_u32(np, "virtual_power", &pdata->bat_mode);
+ 	if (ret < 0)
+ 		dev_err(dev, "virtual_power missing!\n");
++	if (!rk817_is_bat_exist(battery))
++		battery->pdata->bat_mode = MODE_VIRTUAL;
+ 
+ 	ret = of_property_read_u32(np, "bat_res", &pdata->bat_res);
+ 	if (ret < 0)
+@@ -2509,6 +1900,10 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
+ 	if (ret < 0)
+ 		dev_err(dev, "power_off_thresd missing!\n");
+ 
++	ret = of_property_read_u32(np, "low_power_sleep", &pdata->low_pwr_sleep);
++	if (ret < 0)
++		dev_info(dev, "low_power_sleep missing!\n");
++
+ 	if (battery->chip_id == RK809_ID) {
+ 		ret = of_property_read_u32(np, "bat_res_up",
+ 					   &pdata->bat_res_up);
+@@ -2531,40 +1926,6 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
+ 			dev_err(dev, "not have to register chg psy!\n");
+ 	}
+ 
+-	if (!of_find_property(np, "ntc_table", &length)) {
+-		pdata->ntc_size = 0;
+-	} else {
+-		/* get ntc degree base value */
+-		/* get ntc degree base value */
+-		ret = of_property_read_u32_index(np, "ntc_degree_from", 1,
+-						 &pdata->ntc_degree_from);
+-		if (ret) {
+-			dev_err(dev, "invalid ntc_degree_from\n");
+-			return -EINVAL;
+-		}
+-
+-		of_property_read_u32_index(np, "ntc_degree_from", 0,
+-					   &out_value);
+-		if (out_value)
+-			pdata->ntc_degree_from = -pdata->ntc_degree_from;
+-
+-		pdata->ntc_size = length / sizeof(u32);
+-	}
+-
+-	if (pdata->ntc_size) {
+-		size = sizeof(*pdata->ntc_table) * pdata->ntc_size;
+-		pdata->ntc_table = devm_kzalloc(battery->dev, size, GFP_KERNEL);
+-		if (!pdata->ntc_table)
+-			return -ENOMEM;
+-
+-		ret = of_property_read_u32_array(np, "ntc_table",
+-						 pdata->ntc_table,
+-						 pdata->ntc_size);
+-		if (ret < 0)
+-			return ret;
+-
+-	}
+-
+ 	DBG("the battery dts info dump:\n"
+ 	    "bat_res:%d\n"
+ 	    "res_sample:%d\n"
+@@ -2602,9 +1963,12 @@ static enum power_supply_property rk817_bat_props[] = {
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+ 	POWER_SUPPLY_PROP_TEMP,
+ 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
++	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+ };
+ 
+ static int rk817_bat_get_usb_psy(struct device *dev, void *data)
+@@ -2674,6 +2038,45 @@ static int rk817_bat_get_charge_state(struct rk817_battery_device *battery)
+ 	return (battery->usb_in || battery->ac_in);
+ }
+ 
++static int rk817_get_capacity_leve(struct rk817_battery_device *battery)
++{
++	int dsoc;
++
++	if (battery->pdata->bat_mode == MODE_VIRTUAL)
++		return POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
++
++	dsoc = (battery->dsoc + 500) / 1000;
++	if (dsoc < 1)
++		return POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
++	else if (dsoc <= 20)
++		return POWER_SUPPLY_CAPACITY_LEVEL_LOW;
++	else if (dsoc <= 70)
++		return POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
++	else if (dsoc <= 90)
++		return POWER_SUPPLY_CAPACITY_LEVEL_HIGH;
++	else
++		return POWER_SUPPLY_CAPACITY_LEVEL_FULL;
++}
++
++static int rk817_battery_time_to_full(struct rk817_battery_device *battery)
++{
++	int time_sec;
++	int cap_temp;
++
++	if (battery->pdata->bat_mode == MODE_VIRTUAL) {
++		time_sec = 3600;
++	} else if (battery->voltage_avg > 0) {
++		cap_temp = battery->design_cap - (battery->remain_cap / 1000);
++		if (cap_temp < 0)
++			cap_temp = 0;
++		time_sec = (3600 * cap_temp) / battery->voltage_avg;
++	} else {
++		time_sec = 3600 * 24; /* One day */
++	}
++
++	return time_sec;
++}
++
+ static int rk817_battery_get_property(struct power_supply *psy,
+ 				      enum power_supply_property psp,
+ 				      union power_supply_propval *val)
+@@ -2692,10 +2095,13 @@ static int rk817_battery_get_property(struct power_supply *psy,
+ 			val->intval = VIRTUAL_VOLTAGE * 1000;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+-		val->intval = (battery->dsoc  + 300) / 1000;
++		val->intval = (battery->dsoc  + 500) / 1000;
+ 		if (battery->pdata->bat_mode == MODE_VIRTUAL)
+ 			val->intval = VIRTUAL_SOC;
+ 		break;
++	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
++		val->intval = rk817_get_capacity_leve(battery);
++		break;
+ 	case POWER_SUPPLY_PROP_HEALTH:
+ 		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+ 		break;
+@@ -2712,13 +2118,7 @@ static int rk817_battery_get_property(struct power_supply *psy,
+ 		else {
+ 			if ((battery->chip_id != RK809_ID) &&
+ 			    rk817_bat_get_charge_state(battery))
+-			    if(is_bat_charge_en(battery)){
+-					val->intval = POWER_SUPPLY_STATUS_CHARGING;
+-			    }
+-				else{
+-					val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-				}
+-				
++				val->intval = POWER_SUPPLY_STATUS_CHARGING;
+ 			else if (battery->chip_id == RK809_ID &&
+ 				 battery->plugin_trigger)
+ 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
+@@ -2730,8 +2130,12 @@ static int rk817_battery_get_property(struct power_supply *psy,
+ 		val->intval = battery->charge_count;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
++	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+ 		val->intval = battery->pdata->design_capacity * 1000;/* uAh */
+ 		break;
++	case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
++		val->intval = rk817_battery_time_to_full(battery);
++		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+ 		val->intval = 4500 * 1000;
+ 		break;
+@@ -2835,9 +2239,10 @@ static void rk817_bat_power_supply_changed(struct rk817_battery_device *battery)
+ 	else if (battery->dsoc < 0)
+ 		battery->dsoc = 0;
+ 
+-	if (battery->dsoc == old_soc)
++	if (battery->dsoc == old_soc && !battery->change)
+ 		return;
+ 
++	battery->change = false;
+ 	old_soc = battery->dsoc;
+ 	battery->last_dsoc = battery->dsoc;
+ 	power_supply_changed(battery->bat);
+@@ -2888,6 +2293,7 @@ rk817_bat_update_charging_status(struct rk817_battery_device *battery)
+ 	if (is_charging == battery->is_charging)
+ 		return;
+ 
++	battery->change = true;
+ 	battery->is_charging = is_charging;
+ 	if (is_charging)
+ 		battery->charge_count++;
+@@ -2930,11 +2336,11 @@ static void rk817_bat_update_info(struct rk817_battery_device *battery)
+ 		DBG("fcc: %d\n", battery->fcc);
+ 		rk817_bat_init_coulomb_cap(battery, battery->fcc + 100);
+ 		rk817_bat_init_coulomb_cap(battery, battery->fcc);
+-		DBG("0428xxxxxxxxxxxxxxxxxxxxxxx %d\n", rk817_bat_get_capacity_mah(battery));
++		rk817_bat_get_capacity_mah(battery);
+ 	}
+ 
+-	//if (battery->chrg_status != CHARGE_FINISH)
+-		//battery->finish_base = get_boot_sec();
++	if (battery->chrg_status != CHARGE_FINISH)
++		battery->finish_base = get_boot_sec();
+ }
+ 
+ static void rk817_bat_save_data(struct rk817_battery_device *battery)
+@@ -2953,7 +2359,6 @@ static void rk817_bat_lowpwr_check(struct rk817_battery_device *battery)
+ 	int pwr_off_thresd = battery->pdata->pwroff_vol;
+ 
+ 	if (battery->current_avg < 0 && battery->voltage_avg < pwr_off_thresd) {
+-		return;
+ 		if (!time)
+ 			time = get_boot_sec();
+ 
+@@ -2996,23 +2401,15 @@ static void rk817_bat_calc_smooth_dischrg(struct rk817_battery_device *battery)
+ 
+ 		if (battery->dsoc <= 0)
+ 			battery->dsoc = 0;
+-	} else {
+-		DBG("tmp_soc == dsoc / 1000 ..............\n");
+-
+-		battery->dsoc = battery ->smooth_soc;
+-
+ 	}
+ }
+ 
+-static int discharge_smooth_flag;
+-
+ static void rk817_bat_smooth_algorithm(struct rk817_battery_device *battery)
+ {
+ 	int ydsoc = 0, delta_cap = 0, old_cap = 0, tmp_soc;
+-	int linek;
++	/*int linek;*/
+ 	int diff, delta;
+ 	/*int current_avg = rk817_bat_get_avg_current(battery);*/
+-	int current_avg = rk817_bat_get_avg_current(battery);
+ 
+ 	delta = abs(battery->dsoc - battery->rsoc);
+ 	diff = delta * 3;/* speed:3/4 */
+@@ -3047,15 +2444,14 @@ static void rk817_bat_smooth_algorithm(struct rk817_battery_device *battery)
+ 	}
+ 
+ 	/* discharge: sm_linek < 0, if delate_cap <0, ydsoc > 0 */
+-	ydsoc = battery->sm_linek * abs(delta_cap) / DIV(battery->fcc) / 10;
++	ydsoc = battery->sm_linek * abs(delta_cap / 10) / DIV(battery->fcc);
+ 
+ 	DBG("smooth: ydsoc = %d, fcc = %d\n", ydsoc, battery->fcc);
+ 	if (ydsoc == 0) {
+ 		DBG("<%s>. ydsoc = 0\n", __func__);
+ 		return;
+ 	}
+-	rk817_bat_calc_sm_linek(battery);
+-	//battery->sm_remain_cap = battery->remain_cap;
++	battery->sm_remain_cap = battery->remain_cap;
+ 
+ 	DBG("<%s>. k=%d, ydsoc=%d; cap:old=%d, new:%d; delta_cap=%d\n",
+ 	    __func__, battery->sm_linek, ydsoc, old_cap,
+@@ -3089,62 +2485,6 @@ static void rk817_bat_smooth_algorithm(struct rk817_battery_device *battery)
+ 		rk817_bat_calc_sm_linek(battery);
+ 	}
+ 
+-	if ((abs(battery->dsoc - battery->rsoc)  > 1500) && (battery->soc_up_flag == 0)) { 
+-	//	rk817_bat_calc_sm_linek(battery);
+-
+-
+-		delta = abs(battery->dsoc - battery->rsoc);
+-		diff = delta * 3;/* speed:3/4 */
+-
+-		if (current_avg > 0) {
+-			if (battery->dsoc /1000 < battery->rsoc /1000)
+-				linek = 1000 * (delta + diff) / DIV(diff);
+-			else if (battery->dsoc / 1000 > battery->rsoc / 1000)
+-				linek = 1000 * diff / DIV(delta + diff);
+-			else
+-				linek = 1000;
+-		} else {
+-			if (battery->dsoc / 1000 < battery->rsoc / 1000)
+-				linek = -1000 * diff / DIV(delta + diff);
+-			else if (battery->dsoc / 1000 > battery->rsoc / 1000)
+-				linek = -1000 * (delta + diff) / DIV(diff);
+-			else
+-				linek = -1000;
+-		}
+-
+-		battery->sm_linek = linek;
+-		battery->soc_up_flag = 1;
+-		battery->soc_down_flag = 0;
+-	}
+-	if ((abs(battery->dsoc - battery->rsoc)  < 1000) && (abs( battery->sm_linek ) != 1000) && (battery->soc_down_flag == 0)) {
+-		//rk817_bat_calc_sm_linek(battery);
+-		battery->sm_linek  = 1000;
+-		battery->soc_up_flag = 0;
+-		battery->soc_down_flag = 1;
+-	}
+-	if ((battery->dsoc / 1000 == 100) && (battery->rsoc / 1000  == 100)) {
+-		battery->soc_up_flag = 0;
+-		battery->soc_down_flag = 1;
+-	}
+-
+-
+-	if (battery->fcc > battery->pdata->design_qmax)
+-		battery->fcc = battery->pdata->design_qmax - 2;
+-	if (discharge_smooth_flag == 0) {
+-		if ((battery->rsoc <= 700) && abs(battery->current_avg) < 100  && (battery->voltage_avg > 3540))
+-			if (battery->fcc + 3 < battery->pdata->design_qmax) {
+-				rk817_bat_save_fcc(battery, battery->fcc + 2);
+-				DBG("algorithm:---------fcc smootch algorithm step3 -----------\n");
+-				discharge_smooth_flag = 1;
+-			}
+-
+-		if ((battery->rsoc <= 700) && (abs(battery->current_avg) < 130) && (battery->voltage_avg < 3400)) {
+-			DBG("algorithm:---------algorithm step4-----------\n");
+-			discharge_smooth_flag = 1;
+-			rk817_bat_save_fcc(battery, battery->fcc - 2);
+-		}
+-	}
+-
+ 	DBG("smooth: smooth_soc = %d, dsoc = %d\n",
+ 	    battery->smooth_soc, battery->dsoc);
+ 	DBG("smooth: delta_cap = %d, dsoc = %d\n",
+@@ -3160,11 +2500,10 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 	int pwroff_vol;
+ 	int min_gap_xsoc;
+ 	int powerpatch_res;
+-	int pwroff_soc, pwroff_cap;
+ 
+-	//if ((abs(battery->current_avg) < 400) && (battery->dsoc / 1000 > 5))
+-		//pwroff_vol = battery->pdata->pwroff_vol + 50;
+-	//else
++	if ((abs(battery->current_avg) < 400) && (battery->dsoc / 1000 > 5))
++		pwroff_vol = battery->pdata->pwroff_vol + 50;
++	else
+ 		pwroff_vol = battery->pdata->pwroff_vol;
+ 
+ 	/* calc estimate ocv voltage */
+@@ -3191,7 +2530,7 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 	dead_voltage = pwroff_vol - current_avg *
+ 				(battery->bat_res + DEF_PWRPATH_RES) / 1000;
+ 
+-	ocv_voltage = voltage_avg - (current_avg * (battery->bat_res + DEF_PWRPATH_RES)) / 1000;
++	ocv_voltage = voltage_avg - (current_avg * battery->bat_res) / 1000;
+ 	DBG("ZERO0: dead_voltage(shtd) = %d, ocv_voltage(now) = %d\n",
+ 	    dead_voltage, ocv_voltage);
+ 
+@@ -3205,14 +2544,10 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 	ocv_cap = rk817_bat_vol_to_cap(battery, ocv_voltage);
+ 	DBG("ZERO0: ocv_soc = %d, ocv_cap = %d\n",
+ 	    ocv_soc, ocv_cap);
+-	pwroff_soc = rk817_bat_vol_to_soc(battery, pwroff_vol);
+-	pwroff_cap = rk817_bat_vol_to_cap(battery, ocv_voltage);
+ 
+-	DBG("zero**************: pwroff_soc = %d, pwroff_cap = %d\n",
+-            pwroff_soc, pwroff_cap);
+ 	/* xsoc: available rsoc */
+-	xsoc = ocv_soc + pwroff_soc - dead_soc;
+-	//xsoc = ocv_soc;
++	xsoc = ocv_soc - dead_soc;
++
+ 	battery->zero_dead_voltage = dead_voltage;
+ 	battery->zero_dead_soc = dead_soc;
+ 	battery->zero_dead_cap = dead_cap;
+@@ -3239,7 +2574,7 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 	battery->zero_remain_cap = battery->remain_cap;
+ 	battery->zero_timeout_cnt = 0;
+ 	if ((battery->dsoc / 1000 <= 1) && (xsoc > 0)) {
+-		battery->zero_linek = 950;
++		battery->zero_linek = 400;
+ 		battery->zero_drop_sec = 0;
+ 	} else if (xsoc >= 0) {
+ 		battery->zero_drop_sec = 0;
+@@ -3249,7 +2584,7 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 		if ((battery->pdata->energy_mode) &&
+ 		    (xsoc - battery->dsoc / 1000 >= MIN_ZERO_GAP_XSOC3) &&
+ 		    (battery->dsoc  / 1000 <= 10) && (battery->zero_linek < 300)) {
+-			battery->zero_linek = 600;
++			battery->zero_linek = 300;
+ 			DBG("ZERO-new: zero_linek adjust step0...\n");
+ 		/* reserve enough power yet, slow down any way */
+ 		} else if ((xsoc - battery->dsoc / 1000 >= min_gap_xsoc) ||
+@@ -3257,64 +2592,59 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 			    (battery->dsoc / 1000 <= 10) && (xsoc > 15))) {
+ 			if (xsoc <= 20 &&
+ 			    battery->dsoc / 1000 >= battery->pdata->zero_reserve_dsoc)
+-				battery->zero_linek = 1100;
++				battery->zero_linek = 1200;
+ 			else if (xsoc - battery->dsoc / 1000 >= 2 * min_gap_xsoc)
+-				battery->zero_linek = 900;
++				battery->zero_linek = 400;
+ 			else if (xsoc - battery->dsoc / 1000 >= 3 + min_gap_xsoc)
+-				battery->zero_linek = 950;
++				battery->zero_linek = 600;
+ 			else
+-				battery->zero_linek = 1000;
++				battery->zero_linek = 800;
+ 			DBG("ZERO-new: zero_linek adjust step1...\n");
+ 		/* control zero mode beginning enter */
+ 		} else if ((battery->zero_linek > 1800) &&
+ 			   (battery->dsoc / 1000 > 70)) {
+-			battery->zero_linek = 1400;
++			battery->zero_linek = 1800;
+ 			DBG("ZERO-new: zero_linek adjust step2...\n");
+ 		/* dsoc close to xsoc: it must reserve power */
+ 		} else if ((battery->zero_linek > 1000) &&
+ 			   (battery->zero_linek < 1200)) {
+-			battery->zero_linek = 1050;
++			battery->zero_linek = 1200;
+ 			DBG("ZERO-new: zero_linek adjust step3...\n");
+ 		/* dsoc[5~15], dsoc < xsoc */
+ 		} else if ((battery->dsoc / 1000 <= 15 && battery->dsoc > 5) &&
+ 			   (battery->zero_linek <= 1200)) {
+ 			/* slow down */
+ 			if ((xsoc - battery->dsoc / 1000) >= min_gap_xsoc)
+-				battery->zero_linek = 950;
++				battery->zero_linek = 800;
+ 			/* reserve power */
+ 			else
+-				battery->zero_linek = 1050;
++				battery->zero_linek = 1200;
+ 			DBG("ZERO-new: zero_linek adjust step4...\n");
+ 		/* dsoc[5, 100], dsoc < xsoc */
+ 		} else if ((battery->zero_linek < 1000) &&
+ 			   (battery->dsoc / 1000 >= 5)) {
+-				if ((xsoc - battery->dsoc / 1000) < min_gap_xsoc) {
+-					/* reserve power */
+-					battery->zero_linek = 980;
+-				} else {
+-					if (abs(battery->current_avg) > 300)/* heavy */
+-						battery->zero_linek = 900;
+-					else
+-						battery->zero_linek = 1000;
+-				}
++			if ((xsoc - battery->dsoc / 1000) < min_gap_xsoc) {
++				/* reserve power */
++				battery->zero_linek = 1200;
++			} else {
++				if (abs(battery->current_avg) > 500)/* heavy */
++					battery->zero_linek = 900;
++				else
++					battery->zero_linek = 1000;
++			}
+ 			DBG("ZERO-new: zero_linek adjust step5...\n");
+ 		/* dsoc[0~5], dsoc < xsoc */
+ 		} else if ((battery->zero_linek < 1000) &&
+ 			   (battery->dsoc  / 1000 <= 5)) {
+ 			if ((xsoc - battery->dsoc / 1000) <= 3)
+-				battery->zero_linek = 1100;
++				battery->zero_linek = 1200;
+ 			else
+-				battery->zero_linek = 900;
++				battery->zero_linek = 800;
+ 			DBG("ZERO-new: zero_linek adjust step6...\n");
+-		}else if(battery->zero_linek  > 1400){
+-			
+-			battery->zero_linek = 1300;
+ 		}
+ 	} else {
+-
+ 		/* xsoc < 0 */
+ 		battery->zero_linek = 1000;
+-#if 0
+ 		if (!battery->zero_drop_sec)
+ 			battery->zero_drop_sec = get_boot_sec();
+ 		if (base2sec(battery->zero_drop_sec) >= WAIT_DSOC_DROP_SEC) {
+@@ -3325,9 +2655,8 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 				battery->dsoc = 0;
+ 			battery->zero_dsoc = battery->dsoc;
+ 		}
+-#endif
+ 	}
+-#if 0
++
+ 	if (voltage_avg < pwroff_vol - 70) {
+ 		if (!battery->shtd_drop_sec)
+ 			battery->shtd_drop_sec = get_boot_sec();
+@@ -3339,9 +2668,6 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
+ 	} else {
+ 		battery->shtd_drop_sec = 0;
+ 	}
+-#endif
+-//	if (rk817_bat_vol_to_cap(battery, voltage_avg) > battery->remain_cap / 1000)
+-	//	battery->zero_linek = 1000;
+ 
+ 	DBG("Zero: zero_linek = %d\n", battery->zero_linek);
+ }
+@@ -3376,30 +2702,6 @@ static void rk817_bat_calc_zero_algorithm(struct rk817_battery_device *battery)
+ 		battery->dsoc -= 1000;
+ 	else
+ 		battery->dsoc = battery->zero_dsoc;
+-
+-	if ((battery->zero_dsoc < 1000) && (battery->zero_linek < 1000) && (battery->dsoc < 1000)) {
+-		DBG("algorithm:---------algorithm step1 -----------\n");
+-		battery->zero_dsoc = 0;
+-	}
+-	if ((battery->zero_dsoc < 1000) && (battery->zero_linek > 1000) && (battery->dsoc < 1000)) {
+-		if (battery->zero_dsoc < battery->dsoc )
+-			battery->zero_dsoc = battery->dsoc;
+-				DBG("algorithm:---------algorithm step2 -----------\n");
+-
+-	}
+-
+-	if ((battery->dsoc <= 500)  && (battery->voltage_avg > 3520))//3480  30
+-		if (battery->fcc < battery->pdata->design_qmax) {
+-			rk817_bat_save_fcc(battery, battery->fcc + 20);
+-			DBG("algorithm:---------algorithm step3 -----------\n");
+-
+-		}
+-	if ((battery->dsoc <= 500) && (battery->current_avg < 100) && (battery->voltage_avg < 3400)) {
+-				DBG("algorithm:---------algorithm step4-----------\n");
+-
+-		rk817_bat_save_fcc(battery, battery->fcc - 10);
+-	}
+-		
+ }
+ 
+ static void rk817_bat_zero_algorithm(struct rk817_battery_device *battery)
+@@ -3437,31 +2739,24 @@ static void rk817_bat_zero_algorithm(struct rk817_battery_device *battery)
+ 	    delta_cap, battery->zero_linek, delta_soc);
+ 	DBG("zero algorithm end\n");
+ 
+-
+ 	if ((delta_soc >= MIN_ZERO_DSOC_ACCURACY) ||
+ 	    (battery->zero_timeout_cnt > MIN_ZERO_OVERCNT) ||
+ 	    (battery->zero_linek == 0)) {
+ 		DBG("ZERO1:--------- enter calc -----------\n");
+ 		battery->zero_timeout_cnt = 0;
+-
+ 		battery->zero_dsoc -= delta_soc;
+-
+ 		rk817_bat_calc_zero_algorithm(battery);
+ 		DBG("Zero: dsoc: %d\n", battery->dsoc);
+ 		rk817_bat_calc_zero_linek(battery);
+ 	}
+ 
+-	if ((battery->rsoc / 1000 < 1) && (battery->zero_batocv_to_cap > battery->fcc / 100)) {
++	if ((battery->rsoc / 1000 < 1) &&
++	    (battery->zero_batocv_to_cap > battery->fcc / 100)) {
+ 		DBG("ZERO2:---------check step1 -----------\n");
+-
+-		rk817_bat_init_coulomb_cap(battery, battery->zero_batocv_to_cap);
+-		if(rk817_bat_get_capacity_uah(battery) == 0) {
+-			rk817_bat_init_coulomb_cap(battery, battery->zero_batocv_to_cap);
+-				DBG("ZERO3:---------check step2-----------\n");
+-		}
++		rk817_bat_init_coulomb_cap(battery,
++					   battery->zero_batocv_to_cap);
+ 		rk817_bat_calc_zero_linek(battery);
+ 	}
+-
+ }
+ 
+ static void rk817_bat_finish_algorithm(struct rk817_battery_device *battery)
+@@ -3474,7 +2769,7 @@ static void rk817_bat_finish_algorithm(struct rk817_battery_device *battery)
+ 	    (get_charge_status(battery) == CHARGE_FINISH)) {
+ 		battery->age_adjust_cap +=
+ 			(battery->fcc * 1000 - battery->remain_cap);
+-	//	rk817_bat_init_coulomb_cap(battery, battery->fcc);
++		rk817_bat_init_coulomb_cap(battery, battery->fcc);
+ 		rk817_bat_get_capacity_mah(battery);
+ 	}
+ 
+@@ -3513,8 +2808,6 @@ static void rk817_bat_display_smooth(struct rk817_battery_device *battery)
+ 		rk817_bat_smooth_algo_prepare(battery);
+ 		return;
+ 	}
+-    if (battery->stop_smooth == 1)
+-                return;
+ 
+ 	if (battery->work_mode == MODE_FINISH) {
+ 		DBG("step1: charge finish...\n");
+@@ -3566,129 +2859,52 @@ static void rk817_bat_display_smooth(struct rk817_battery_device *battery)
+ 	}
+ }
+ 
+-static int cap_smooth_flag = 0;
+-static int discharge_remain_cap, charge_remain_cap;
+-static int charge_current_avg;
+-
+-static void rk817_charge_cap_smooth_init(struct rk817_battery_device *battery)
+-{
+-	cap_smooth_flag = 1;
+-	discharge_remain_cap = battery -> remain_cap;
+-}
+-
+-static void rk817_charge_cap_smooth(struct rk817_battery_device *battery)
+-{
+-	int check_cap = 0;
+-	int status = rk817_bat_get_charge_status(battery);
+-
+-	if (status == CHRG_OFF) {
+-		if (cap_smooth_flag == 1) {
+-			discharge_remain_cap = battery ->remain_cap;
+-		}else if (cap_smooth_flag == 2) {
+-			DBG("checkout................%d\n", cap_smooth_flag);
+-			if (charge_remain_cap > discharge_remain_cap) {
+-				if (charge_current_avg  > 200) {
+-					check_cap = (charge_remain_cap - discharge_remain_cap) * 997 /1000 + discharge_remain_cap;
+-					DBG("%s, %d: check_cap: %d\n", __FUNCTION__, __LINE__, check_cap);
+-				} else if (battery->current_avg > 100) {
+-					check_cap = (charge_remain_cap - discharge_remain_cap) * 998 /1000 + discharge_remain_cap;
+-					DBG("%s, %d: check_cap: %d\n", __FUNCTION__, __LINE__, check_cap);
+-				}
+-				if (check_cap != 0) {
+-					
+-					DBG("%s, %d: check_cap: %d, remain_cap:%d\n", __FUNCTION__, __LINE__, check_cap,rk817_bat_get_capacity_uah(battery));
+-					
+-					rk817_bat_init_coulomb_cap(battery, check_cap / 1000);
+-					rk817_bat_calc_sm_linek(battery);
+-					DBG("%s, %d: check_cap: %d, remain_cap:%d\n", __FUNCTION__, __LINE__, check_cap,rk817_bat_get_capacity_uah(battery));
+-				}
+-			}
+-			cap_smooth_flag = 1;
+-		}
+-
+-	} else if (status == CC_OR_CV_CHRG) {
+-		cap_smooth_flag = 2;
+-		charge_remain_cap = battery -> remain_cap;
+-		charge_current_avg = battery -> current_avg;
+-	} else if (status == CHARGE_FINISH) {
+-		charge_remain_cap = 0;
+-		cap_smooth_flag = 1;
+-	}
+-
+-	DBG("cap_smooth_flag = %d, discharge_remain_cap = %d, charge_remain_cap = %d, chrage_current_avg: %d\n",
+-		cap_smooth_flag, discharge_remain_cap, charge_remain_cap, charge_current_avg);
+-}
+-
+-
+-
+ static void rk817_bat_output_info(struct rk817_battery_device *battery)
+ {
+-	DBG("info start 20210708:\n");
++	DBG("info start:\n");
+ 	DBG("info: voltage_k = %d\n", battery->voltage_k);
+ 	DBG("info: voltage_b = %d\n", battery->voltage_b);
+ 	DBG("info: voltage = %d\n", battery->voltage_avg);
+ 	DBG("info: voltage_sys = %d\n", battery->voltage_sys);
+ 	DBG("info: current = %d\n", battery->current_avg);
++
+ 	DBG("info: FCC = %d\n", battery->fcc);
+ 	DBG("info: remain_cap = %d\n", battery->remain_cap);
+ 	DBG("info: sm_remain_cap = %d\n", battery->sm_remain_cap);
+ 	DBG("info: sm_link = %d\n", battery->sm_linek);
+ 	DBG("info: smooth_soc = %d\n", battery->smooth_soc);
+ 
+-	DBG("info: zero_remain_cap = %d ", battery->zero_remain_cap);
+-	DBG("info: zero_link = %d ", battery->zero_linek);
+-	DBG("info: zero_dsoc = %d ", battery->zero_dsoc);
++	DBG("info: zero_remain_cap = %d\n", battery->zero_remain_cap);
++	DBG("info: zero_link = %d\n", battery->zero_linek);
++	DBG("info: zero_dsoc = %d\n", battery->zero_dsoc);
+ 
+-	DBG("info: remain_cap = %d ", battery->remain_cap);
++	DBG("info: remain_cap = %d\n", battery->remain_cap);
+ 	DBG("info: dsoc = %d, dsoc/1000 = %d\n",
+ 	    battery->dsoc, battery->dsoc / 1000);
+ 	DBG("info: rsoc = %d\n", battery->rsoc);
+-
+-	DBG("dsoc/1000 = %d, dsoc = %d, rsoc = %d, info: zero_link = %d, voltage = %d, sm_link = %d, remain_cap = %d\n",
+-			battery->dsoc / 1000, battery->dsoc,  battery->rsoc, battery->zero_linek, battery->voltage_avg, battery->sm_linek, battery->remain_cap);
+-	//printk("dsoc/1000 = %d, dsoc = %d, rsoc = %d, info: zero_link = %d, voltage = %d, sm_link = %d, remain_cap = %d\n",
+-	//		battery->dsoc / 1000, battery->dsoc,  battery->rsoc, battery->zero_linek, battery->voltage_avg, battery->sm_linek, battery->remain_cap);
+ 	DBG("info END.\n");
+ }
+ 
+ static void rk817_battery_work(struct work_struct *work)
+ {
+-	int status;
+ 	struct rk817_battery_device *battery =
+ 		container_of(work,
+ 			     struct rk817_battery_device,
+ 			     bat_delay_work.work);
+ 
+-	if ((battery->vb_lo_flag == 1) && (rk817_bat_field_read(battery, CHG_STS) == CHRG_OFF)) {
+-		power_supply_changed(battery->bat);
+-		return;
+-	}
+-        if ( (battery->dsoc /1000 == 0) && (battery->voltage_avg < 3350) )
+-            rk817_bat_field_write(battery, FIRST_RESET_FLAG, 0x01);
+-
+-        if (battery->stop_smooth == 1) {
+-                status = rk817_bat_field_read(battery, CHG_STS);
+-                DBG("-222-current_avg:%d--CHG_STS status:%d -- %d\n",battery->current_avg,status,CHARGE_FINISH);
+-                if ((status == CHRG_OFF) || ((battery->current_avg > 10) || (battery->current_avg < -10)))
+-                        battery->stop_smooth = 0;
+-            }
+-
+ 	rk817_bat_update_info(battery);
+ 	rk817_bat_lowpwr_check(battery);
+ 	rk817_bat_display_smooth(battery);
+-	DBG("0509111111..................\n");
+-	rk817_charge_cap_smooth(battery);
+ 	rk817_bat_power_supply_changed(battery);
+ 	rk817_bat_save_data(battery);
+ 	rk817_bat_output_info(battery);
+-	rk817_bat_update_temperature(battery);
++
+ 	if (rk817_bat_field_read(battery, CUR_CALIB_UPD)) {
+ 		rk817_bat_current_calibration(battery);
+ 		rk817_bat_init_voltage_kb(battery);
+ 		rk817_bat_field_write(battery, CUR_CALIB_UPD, 0x01);
+ 	}
+-    	DBG("\n work REGE9 ====== 0x%x\n", rk817_bat_field_read(battery, REGE9));
+-        DBG("battery->stop_smooth: %d\n", battery->stop_smooth);
++
+ 	queue_delayed_work(battery->bat_monitor_wq, &battery->bat_delay_work,
+ 			   msecs_to_jiffies(battery->monitor_ms));
+ }
+@@ -3721,65 +2937,6 @@ static irqreturn_t rk809_plug_out_isr(int irq, void *cg)
+ 	return IRQ_HANDLED;
+ }
+ 
+-
+-static irqreturn_t rk817_vb_low_irq(int irq, void *bat)
+-{
+-	struct rk817_battery_device *di = (struct rk817_battery_device *)bat;
+-
+-	DBG("xxxxxxxxxxxxxxxrk817_vb_low_irqxxxxxxxxxxxxxxxxxxxxxxxx");
+-	DBG("xxxxxxxxxxxxxxrk817_vb_low_irqxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+-
+-	di->dsoc = 0;
+-	rk_send_wakeup_key();
+-    di->vb_lo_flag = 1;
+-    rk817_bat_init_coulomb_cap(di, 0);
+-    rk817_bat_init_coulomb_cap(di, 1);
+-    rk817_bat_save_dsoc(di, 0);
+-    rk817_bat_save_cap(di, 0);
+-    rk817_bat_field_write(di, FIRST_RESET_FLAG, 0x01);
+-
+-	DBG("lower power yet, power off system! v=%d, c=%d, dsoc=%d\n",
+-		 di->voltage_avg, di->current_avg, di->dsoc);
+-	power_supply_changed(di->bat);
+-
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static int rk817_bat_init_irqs(struct rk817_battery_device *di)
+-{
+-	struct rk808 *rk817 = di->rk817;
+-	struct platform_device *pdev = di->pdev;
+-	int ret, vb_lo_irq;
+-
+-        DBG("+++++++++++++++1111++++++++++++++++++\n");
+-	rk817_bat_field_write(di, VB_LO_SEL, 0x06);
+-        DBG("VB_LO_SEL: 0x%x\n", rk817_bat_field_read(di, VB_LO_SEL));
+-
+-	vb_lo_irq = regmap_irq_get_virq(rk817->irq_data, RK817_IRQ_VB_LO);
+-	if (vb_lo_irq < 0) {
+-		dev_err(di->dev, "vb_lo_irq request failed!\n");
+-		return vb_lo_irq;
+-	}
+-        DBG("+++++++++++++++2222222222++++++++++++++\n");
+-
+-	ret = devm_request_threaded_irq(di->dev, vb_lo_irq, NULL,
+-					rk817_vb_low_irq,
+-					IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+-					"rk817_vb_low", di);
+-	if (ret) {
+-		dev_err(&pdev->dev, "vb_lo_irq request failed!\n");
+-		return ret;
+-	}
+-       di->vb_lo_irq = vb_lo_irq;
+-      disable_irq(di->vb_lo_irq);
+-	enable_irq_wake(vb_lo_irq);
+-        DBG("+++++++++++++++3333333333333++++++++++++\n");
+-
+-	return 0;
+-}
+-
+-
+ static int rk809_charge_init_irqs(struct rk817_battery_device *battery)
+ {
+ 	struct rk808 *rk817 = battery->rk817;
+@@ -3839,41 +2996,6 @@ static const struct of_device_id rk817_bat_of_match[] = {
+ };
+ #endif
+ 
+-//thzy start
+-struct rk817_battery_device *g_battery;
+-
+-/*
+-static int is_bat_charge_en(struct rk817_battery_device *battery)
+-{
+-	return rk817_bat_field_read(battery, CHRG_EN);
+-}
+-
+-static void rk817_bat_enable_charge(struct rk817_battery_device *battery)
+-{
+-	rk817_bat_field_write(battery, CHRG_EN, ENABLE);
+-}
+-
+-static void rk817_bat_disable_charge(struct rk817_battery_device *battery)
+-{
+-	rk817_bat_field_write(battery, CHRG_EN, DISABLE);
+-}
+-*/
+-static int charge_status_init(void)
+-
+-{
+-          
+-   return 0;
+-
+-}
+-
+-static void  charge_status_exit(void)
+-
+-{
+-
+-
+-}
+-//thzy end
+-
+ static int rk817_battery_probe(struct platform_device *pdev)
+ {
+ 	const struct of_device_id *of_id =
+@@ -3883,9 +3005,6 @@ static int rk817_battery_probe(struct platform_device *pdev)
+ 	struct i2c_client *client = rk817->i2c;
+ 	int i,  ret;
+ 
+-
+-	DBG("battery version: rk817202100708\n");
+-
+ 	if (!of_id) {
+ 		dev_err(&pdev->dev, "Failed to find matching dt id\n");
+ 		return -ENODEV;
+@@ -3920,12 +3039,6 @@ static int rk817_battery_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	battery->channel = iio_channel_get(battery->dev, NULL);
+-	if (IS_ERR(battery->channel)) {
+-		DBG("%s() not set io-channels property \n", __func__);
+-		battery->channel = NULL;
+-	}
+-
+ 	ret = rk817_bat_parse_dt(battery);
+ 	if (ret < 0) {
+ 		dev_err(battery->dev, "battery parse dt failed!\n");
+@@ -3944,6 +3057,7 @@ static int rk817_battery_probe(struct platform_device *pdev)
+ 	INIT_DELAYED_WORK(&battery->bat_delay_work, rk817_battery_work);
+ 	queue_delayed_work(battery->bat_monitor_wq, &battery->bat_delay_work,
+ 			   msecs_to_jiffies(TIMER_MS_COUNTS * 5));
++	INIT_WORK(&battery->resume_work, rk817_bat_resume_work);
+ 
+ 	ret = rk817_bat_init_power_supply(battery);
+ 	if (ret) {
+@@ -3958,7 +3072,6 @@ static int rk817_battery_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	rk817_bat_init_irqs(battery);
+ 	if (battery->chip_id == RK809_ID)
+ 		rk809_charge_init_irqs(battery);
+ 
+@@ -3968,14 +3081,12 @@ static int rk817_battery_probe(struct platform_device *pdev)
+ 	DBG("name: 0x%x", rk817_bat_field_read(battery, CHIP_NAME_H));
+ 	DBG("%x\n", rk817_bat_field_read(battery, CHIP_NAME_L));
+ 	DBG("driver version %s\n", DRIVER_VERSION);
+-	g_battery = battery;
+-  charge_status_init();
++
+ 	return 0;
+ }
+ 
+ static void rk817_battery_shutdown(struct platform_device *dev)
+ {
+-	charge_status_exit();
+ }
+ 
+ static time_t rk817_get_rtc_sec(void)
+@@ -4004,35 +3115,14 @@ static time_t rk817_get_rtc_sec(void)
+ 	return sec;
+ }
+ 
+-static int __maybe_unused rk817_bat_pm_suspend(struct device *dev)
++#ifdef CONFIG_PM_SLEEP
++static int  rk817_bat_pm_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rk817_battery_device *battery = dev_get_drvdata(&pdev->dev);
+-	int voltage;
+ 
+ 	cancel_delayed_work_sync(&battery->bat_delay_work);
+ 
+-          enable_irq(battery->vb_lo_irq);
+-	enable_irq_wake(battery->vb_lo_irq);
+-
+-	voltage = rk817_bat_get_battery_voltage(battery);
+-
+-	if ((voltage < 3410) &&  (rk817_bat_field_read(battery, CHG_STS) == CHRG_OFF)) {
+-		battery->dsoc = 0;
+-		rk_send_wakeup_key();
+-		battery->vb_lo_flag = 1;
+-		rk817_bat_init_coulomb_cap(battery, 0);
+-		rk817_bat_init_coulomb_cap(battery, 1);
+-		rk817_bat_save_dsoc(battery, 0);
+-		rk817_bat_save_cap(battery, 0);
+-		rk817_bat_field_write(battery, FIRST_RESET_FLAG, 0x01);
+-		power_supply_changed(battery->bat);
+-
+-		return -1;
+-	}
+-
+-
+-
+ 	battery->s2r = false;
+ 	battery->sleep_chrg_status = get_charge_status(battery);
+ 	battery->current_avg = rk817_bat_get_avg_current(battery);
+@@ -4045,7 +3135,6 @@ static int __maybe_unused rk817_bat_pm_suspend(struct device *dev)
+ 
+ 	battery->remain_cap = rk817_bat_get_capacity_uah(battery);
+ 	battery->rsoc = rk817_bat_get_rsoc(battery);
+-	battery->sleep_rsoc = battery->rsoc;
+ 
+ 	battery->rtc_base = rk817_get_rtc_sec();
+ 	rk817_bat_save_data(battery);
+@@ -4061,13 +3150,13 @@ static int __maybe_unused rk817_bat_pm_suspend(struct device *dev)
+ 		 */
+ 		if (battery->sleep_chrg_status == CHARGE_FINISH) {
+ 			battery->work_mode = MODE_FINISH;
+-			battery->finish_base = get_boot_sec();
++			if (!battery->finish_base)
++				battery->finish_base = get_boot_sec();
+ 		} else {
+ 			battery->work_mode = MODE_SMOOTH;
+ 			rk817_bat_smooth_algo_prepare(battery);
+ 		}
+ 	}
+-  //rk817_bat_field_write(battery, REGE9, 0x83);//7d
+ 
+ 	DBG("suspend get_boot_sec: %lld\n", get_boot_sec());
+ 
+@@ -4089,7 +3178,7 @@ static int rk817_bat_rtc_sleep_sec(struct rk817_battery_device *battery)
+ 
+ 	return (interval_sec > 0) ? interval_sec : 0;
+ }
+-#if 0
++
+ static void rk817_bat_relife_age_flag(struct rk817_battery_device *battery)
+ {
+ 	u8 ocv_soc, ocv_cap, soc_level;
+@@ -4165,8 +3254,8 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
+ 	bool ocv_soc_updated = false;
+ 	int tgt_dsoc, gap_soc, sleep_soc = 0;
+ 	int pwroff_vol = battery->pdata->pwroff_vol;
+-	int sleepcurrent = 0;
+ 	unsigned long sleep_sec = battery->sleep_dischrg_sec;
++	int sleep_cur;
+ 
+ 	DBG("<%s>. enter: dsoc=%d, rsoc=%d, rv=%d, v=%d, sleep_min=%lu\n",
+ 	    __func__, battery->dsoc, battery->rsoc, battery->voltage_relax,
+@@ -4181,7 +3270,11 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
+ 
+ 	/* handle dsoc */
+ 	if (battery->dsoc <= battery->rsoc) {
+-		battery->sleep_sum_cap = (SLP_CURR_MIN * sleep_sec / 3600);
++		if (battery->pdata->low_pwr_sleep)
++			sleep_cur = LOW_PWR_SLP_CURR_MIN;
++		else
++			sleep_cur = SLP_CURR_MIN;
++		battery->sleep_sum_cap = (sleep_cur * sleep_sec / 3600);
+ 		sleep_soc = battery->sleep_sum_cap * 100 / DIV(battery->fcc);
+ 		tgt_dsoc = battery->dsoc - sleep_soc * 1000;
+ 		if (sleep_soc > 0) {
+@@ -4204,34 +3297,21 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
+ 		    __func__, battery->sleep_sum_cap, sleep_soc, tgt_dsoc);
+ 	} else {
+ 		/* di->dsoc > di->rsoc */
+-		battery->sleep_sum_cap = (SLP_CURR_MAX * sleep_sec / 3600);
++		if (battery->pdata->low_pwr_sleep)
++			sleep_cur = LOW_PWR_SLP_CURR_MAX;
++		else
++			sleep_cur = SLP_CURR_MAX;
++		battery->sleep_sum_cap = (sleep_cur * sleep_sec / 3600);
+ 		sleep_soc = battery->sleep_sum_cap / DIV(battery->fcc / 100);
+ 		gap_soc = battery->dsoc - battery->rsoc;
+ 
+-//		if (sleep_sec > 3600)
+-
+ 		DBG("calib1: rsoc=%d, dsoc=%d, intval=%d\n",
+ 		    battery->rsoc, battery->dsoc, sleep_soc);
+-		if (gap_soc > sleep_soc) {
+-			if (battery->sleep_rsoc > battery->rsoc + 3000) {
+-				sleepcurrent = ((battery->sleep_rsoc - battery->rsoc) / 1000) * battery->fcc * 36 / sleep_sec;	
+-				if(sleepcurrent > 15) {
+-					if (battery->dsoc < (battery->sleep_rsoc - battery->rsoc))
+-						if (battery->dsoc > battery->rsoc)
+-							battery->dsoc = battery->rsoc;
+-						else
+-							battery->dsoc = 0;
+-					else
+-						battery->dsoc -= (battery->sleep_rsoc - battery->rsoc);
+-				}
+-			}
+-
+-			if(sleepcurrent <= 15) {
+-				if ((gap_soc - 5000) > (sleep_soc * 2 * 1000))
+-					battery->dsoc -= (sleep_soc * 2 * 1000);
+-				else
+-					battery->dsoc -= sleep_soc * 1000;
+-			}
++		if (gap_soc / 1000 > sleep_soc) {
++			if ((gap_soc - 5000) > (sleep_soc * 2 * 1000))
++				battery->dsoc -= (sleep_soc * 2 * 1000);
++			else
++				battery->dsoc -= sleep_soc * 1000;
+ 		} else {
+ 			battery->dsoc = battery->rsoc;
+ 		}
+@@ -4241,7 +3321,7 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
+ 	}
+ 
+ 	if (battery->voltage_avg <= pwroff_vol - 70) {
+-		//battery->dsoc = 0;
++		battery->dsoc = 0;
+ 		DBG("low power sleeping, shutdown... %d\n", battery->dsoc);
+ 	}
+ 
+@@ -4262,42 +3342,11 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
+ 
+ 	return sleep_soc;
+ }
+-#endif
+-static int   rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
+-{
+-	/*int gap_soc, sleep_soc = 0;
+-	unsigned long sleep_sec = battery->sleep_dischrg_sec;
+-
+-	battery->sleep_sum_cap = (SLP_CURR_MAX * sleep_sec / 3600);
+-	sleep_soc = battery->sleep_sum_cap / DIV(battery->fcc / 100);
+-	gap_soc = battery->dsoc - battery->rsoc;
+ 
+-	printk("rk817_bat_sleep_dischrg: rsoc=%d, dsoc=%d, intval=%d\n", battery->rsoc, battery->dsoc, sleep_soc);
+-	printk("gap_soc > sleep_soc\n");
+-
+-	if (abs(battery->sm_linek) < 1000)
+-		battery->dsoc -= abs(battery->sm_linek) * (battery->sleep_rsoc - battery->rsoc) / 1000;
+-	else */
+-	battery->dsoc -= battery->sleep_rsoc - battery->rsoc;
+-
+-	if (battery->dsoc  < 0)
+-		battery->dsoc = 0;
+-	if (battery->dsoc  > 100 * 1000)
+-		battery->dsoc = 100 * 1000;
+-
+-	//printk("<%s>. out: dsoc=%d, rsoc=%d, sum_cap=%d\n",
+-	//    __func__, battery->dsoc, battery->rsoc, battery->sleep_sum_cap);
+-
+-	return 1;
+-}
+-
+-static int __maybe_unused rk817_bat_pm_resume(struct device *dev)
++static void rk817_bat_resume_work(struct work_struct *work)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct rk817_battery_device *battery = dev_get_drvdata(&pdev->dev);
+-	int interval_sec = 0, time_step, pwroff_vol;
+-
+-          disable_irq(battery->vb_lo_irq);
++	struct rk817_battery_device *battery = container_of(work, struct rk817_battery_device, resume_work);
++	int interval_sec = 0, time_step = 0, pwroff_vol;
+ 
+ 	battery->s2r = true;
+ 	battery->current_avg = rk817_bat_get_avg_current(battery);
+@@ -4327,14 +3376,11 @@ static int __maybe_unused rk817_bat_pm_resume(struct device *dev)
+ 	    interval_sec);
+ 
+ 	/* sleep: enough time and discharge */
+-	/* if ((!battery->sleep_chrg_online) &&
+-	    ((battery->sleep_dischrg_sec > time_step) || (battery->sleep_rsoc > battery->rsoc + 5000))) {
+-		if (rk817_bat_sleep_dischrg(battery))
+-			battery->sleep_dischrg_sec = 0;
+-	} */
+-
++	if ((!battery->sleep_chrg_online) &&
++	    (battery->sleep_dischrg_sec > time_step)) {
+ 		if (rk817_bat_sleep_dischrg(battery))
+ 			battery->sleep_dischrg_sec = 0;
++	}
+ 
+ 	rk817_bat_save_data(battery);
+ 
+@@ -4346,9 +3392,17 @@ static int __maybe_unused rk817_bat_pm_resume(struct device *dev)
+ 
+ 	queue_delayed_work(battery->bat_monitor_wq, &battery->bat_delay_work,
+ 			   msecs_to_jiffies(1000));
++}
++
++static int rk817_bat_pm_resume(struct device *dev)
++{
++	struct rk817_battery_device *battery = dev_get_drvdata(dev);
++
++	queue_work(battery->bat_monitor_wq, &battery->resume_work);
+ 
+ 	return 0;
+ }
++#endif
+ 
+ static SIMPLE_DEV_PM_OPS(rk817_bat_pm_ops,
+ 			 rk817_bat_pm_suspend,
+@@ -4368,7 +3422,7 @@ static int __init rk817_battery_init(void)
+ {
+ 	return platform_driver_register(&rk817_battery_driver);
+ }
+-device_initcall_sync(rk817_battery_init);
++fs_initcall_sync(rk817_battery_init);
+ 
+ static void __exit rk817_battery_exit(void)
+ {
+@@ -4376,7 +3430,5 @@ static void __exit rk817_battery_exit(void)
+ }
+ module_exit(rk817_battery_exit);
+ 
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("shengfeixu <xsf@rock-chips.com>");
+-MODULE_DESCRIPTION("rk817 battery Charger Driver");
+-
++MODULE_DESCRIPTION("RK817 Battery driver");
++MODULE_LICENSE("GPL");
+\ No newline at end of file
+diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/rk817_charger.c
+index cc64c406b..82f57ea0e 100644
+--- a/drivers/power/supply/rk817_charger.c
++++ b/drivers/power/supply/rk817_charger.c
+@@ -277,9 +277,6 @@ struct charger_platform_data {
+ 	u32 power_dc2otg;
+ 	u32 dc_det_level;
+ 	int dc_det_pin;
+-	int charge_red_gpio;
+-	int charge_green_gpio;
+-	int charge_yellow_gpio;
+ 	bool support_dc_det;
+ 	int virtual_power;
+ 	int sample_res;
+@@ -338,9 +335,6 @@ struct rk817_charger {
+ 	int plugout_irq;
+ };
+ 
+-static int rk817_charge_online(struct rk817_charger *charge);
+-static int rk817_charge_get_dsoc(struct rk817_charger *charge);
+-
+ static enum power_supply_property rk817_ac_props[] = {
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_STATUS,
+@@ -427,23 +421,6 @@ static int rk817_charge_usb_get_property(struct power_supply *psy,
+ 		ret = -EINVAL;
+ 		break;
+ 	}
+-	
+-	//led
+-	if( rk817_charge_online(charge) ){
+-		gpio_direction_output(charge->pdata->charge_yellow_gpio,1);
+-		if(rk817_charge_get_dsoc(charge) == 100)
+-			gpio_direction_output(charge->pdata->charge_yellow_gpio,0);
+-	}else
+-		gpio_direction_output(charge->pdata->charge_yellow_gpio,0);
+-	
+-	if(rk817_charge_get_dsoc(charge) >= 15){
+-		gpio_direction_output(charge->pdata->charge_green_gpio,1);
+-		gpio_direction_output(charge->pdata->charge_red_gpio,0);
+-	}else{
+-		gpio_direction_output(charge->pdata->charge_green_gpio,0);
+-		gpio_direction_output(charge->pdata->charge_red_gpio,1);
+-	}
+-		
+ 
+ 	return ret;
+ }
+@@ -585,7 +562,11 @@ static void rk817_charge_sys_can_sd_disable(struct rk817_charger *charge)
+ {
+ 	rk817_charge_field_write(charge, SYS_CAN_SD, DISABLE);
+ }
+-
++#define CW2015_CAP
++#ifdef CW2015_CAP
++int cw2015_get_charge_ac_state=0;
++EXPORT_SYMBOL(cw2015_get_charge_ac_state);
++#endif
+ static int rk817_charge_get_charge_status(struct rk817_charger *charge)
+ {
+ 	int status;
+@@ -1473,42 +1454,6 @@ static int rk817_charge_parse_dt(struct rk817_charger *charge)
+ 			return -EINVAL;
+ 		}
+ 	}
+-	
+-	if (of_find_property(np, "charge_red_gpio", &ret)) {
+-		pdata->charge_red_gpio = of_get_named_gpio_flags(np, "charge_red_gpio",
+-							    0, &flags);
+-		if (gpio_is_valid(pdata->charge_red_gpio)) {
+-			DBG("support charge_red_gpio\n");
+-			ret = devm_gpio_request(dev,pdata->charge_red_gpio,"red_led");
+-			if (ret < 0) {
+-				dev_err(dev, "failed to request gpio %d\n",pdata->charge_red_gpio);
+-			}
+-		} 
+-	}
+-	
+-	if (of_find_property(np, "charge_green_gpio", &ret)) {
+-		pdata->charge_green_gpio = of_get_named_gpio_flags(np, "charge_green_gpio",
+-							    0, &flags);
+-		if (gpio_is_valid(pdata->charge_green_gpio)) {
+-			DBG("support charge_green_gpio\n");
+-			ret = devm_gpio_request(dev,pdata->charge_green_gpio,"green_led");
+-			if (ret < 0) {
+-				dev_err(dev, "failed to request gpio %d\n",pdata->charge_green_gpio);
+-			}
+-		} 
+-	}
+-	
+-	if (of_find_property(np, "charge_yellow_gpio", &ret)) {
+-		pdata->charge_yellow_gpio = of_get_named_gpio_flags(np, "charge_yellow_gpio",
+-							    0, &flags);
+-		if (gpio_is_valid(pdata->charge_yellow_gpio)) {
+-			DBG("support charge_yellow_gpio\n");
+-			ret = devm_gpio_request(dev,pdata->charge_yellow_gpio,"yellow_led");
+-			if (ret < 0) {
+-				dev_err(dev, "failed to request gpio %d\n",pdata->charge_yellow_gpio);
+-			}
+-		} 
+-	}
+ 
+ 	DBG("input_current:%d\n"
+ 		"input_min_voltage: %d\n"
+@@ -1539,12 +1484,18 @@ static void rk817_charge_irq_delay_work(struct work_struct *work)
+ 
+ 	if (charge->plugin_trigger) {
+ 		DBG("pmic: plug in\n");
++		#ifdef CW2015_CAP
++		cw2015_get_charge_ac_state=0;
++		#endif
+ 		charge->plugin_trigger = 0;
+ 		if (charge->pdata->extcon)
+ 			queue_delayed_work(charge->usb_charger_wq, &charge->usb_work,
+ 					   msecs_to_jiffies(10));
+ 	} else if (charge->plugout_trigger) {
+ 		DBG("pmic: plug out\n");
++		#ifdef CW2015_CAP
++		cw2015_get_charge_ac_state=1;
++		#endif
+ 		charge->plugout_trigger = 0;
+ 		rk817_charge_set_chrg_param(charge, USB_TYPE_NONE_CHARGER);
+ 		rk817_charge_set_chrg_param(charge, DC_TYPE_NONE_CHARGER);
+@@ -1710,22 +1661,6 @@ static int rk817_charge_probe(struct platform_device *pdev)
+ 
+ 	rk817_chage_debug(charge);
+ 	DBG("driver version: %s\n", CHARGE_DRIVER_VERSION);
+-	
+-	//charge led init 
+-	if( rk817_charge_online(charge) )
+-		gpio_direction_output(charge->pdata->charge_yellow_gpio,1);
+-	else
+-		gpio_direction_output(charge->pdata->charge_yellow_gpio,0);
+-	
+-	if(rk817_charge_get_dsoc(charge) >= 15){
+-		gpio_direction_output(charge->pdata->charge_green_gpio,1);
+-		gpio_direction_output(charge->pdata->charge_red_gpio,0);
+-	}else{
+-		gpio_direction_output(charge->pdata->charge_green_gpio,0);
+-		gpio_direction_output(charge->pdata->charge_red_gpio,1);
+-	}
+-		
+-			
+ 
+ 	return 0;
+ irq_fail:
+@@ -1759,7 +1694,7 @@ irq_fail:
+ 	} else {
+ 		rk_bc_detect_notifier_unregister(&charge->bc_nb);
+ 	}
+-	
++
+ 	return ret;
+ }
+ 
+@@ -1870,4 +1805,4 @@ static void __exit rk817_charge_exit(void)
+ module_exit(rk817_charge_exit);
+ 
+ MODULE_DESCRIPTION("RK817 Charge driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL");
+\ No newline at end of file
+diff --git a/sound/soc/codecs/rk817_codec.c b/sound/soc/codecs/rk817_codec.c
+index a7b4feff2..c554d7e9b 100755
+--- a/sound/soc/codecs/rk817_codec.c
++++ b/sound/soc/codecs/rk817_codec.c
+@@ -25,12 +25,17 @@
+ #include <sound/pcm_params.h>
+ #include <sound/soc.h>
+ #include "rk817_codec.h"
+-
+-#ifdef CONFIG_SND_DEBUG
+-#define DBG(args...) pr_info(args)
+-#else
+-#define DBG(args...)
+-#endif
++#define __MURMUR__
++#define CONFIG_RK817_HEADSET
++static int dbg_enable;
++module_param_named(dbg_level, dbg_enable, int, 0644);
++
++#define DBG(args...) \
++	do { \
++		if (dbg_enable) { \
++			pr_info(args); \
++		} \
++	} while (0)
+ 
+ /* For route */
+ #define RK817_CODEC_PLAYBACK	1
+@@ -61,7 +66,39 @@
+ 
+ #define CODEC_SET_SPK 1
+ #define CODEC_SET_HP 2
++#if defined(CONFIG_RK817_HEADSET)
++struct rk817_codec_priv {
++	struct snd_soc_component *component;
++	struct regmap *regmap;
++	struct rk808 *rk817;
++	struct clk *mclk;
++
++	unsigned int stereo_sysclk;
++	unsigned int rate;
+ 
++	unsigned int spk_volume;
++	unsigned int hp_volume;
++	unsigned int capture_volume;
++
++	bool mic_in_differential;
++	bool pdmdata_out_enable;
++	bool use_ext_amplifier;
++	bool adc_for_loopback;
++
++	bool out_l2spk_r2hp;
++	long int playback_path;
++	long int capture_path;
++
++	struct gpio_desc *spk_ctl_gpio;
++	struct gpio_desc *hp_ctl_gpio;
++	
++	bool hp_inserted;
++	
++	int spk_mute_delay;
++	int hp_mute_delay;
++};
++struct rk817_codec_priv *rk817_g;
++#else
+ struct rk817_codec_priv {
+ 	struct snd_soc_component *component;
+ 	struct regmap *regmap;
+@@ -83,13 +120,14 @@ struct rk817_codec_priv {
+ 	bool out_l2spk_r2hp;
+ 	long int playback_path;
+ 	long int capture_path;
+-	long int mute;
+ 
+ 	struct gpio_desc *spk_ctl_gpio;
+ 	struct gpio_desc *hp_ctl_gpio;
++	
+ 	int spk_mute_delay;
+ 	int hp_mute_delay;
+ };
++#endif
+ 
+ static const struct reg_default rk817_reg_defaults[] = {
+ 	{ RK817_CODEC_DTOP_VUCTL, 0x003 },
+@@ -224,13 +262,22 @@ static bool rk817_codec_register(struct device *dev, unsigned int reg)
+ 		return false;
+ 	}
+ }
+-
++#ifdef __MURMUR__
++extern int rk817_pa_power_on;
++#endif
+ static int rk817_codec_ctl_gpio(struct rk817_codec_priv *rk817,
+ 				int gpio, int level)
+ {
+ 	if ((gpio & CODEC_SET_SPK) &&
+ 	    rk817->spk_ctl_gpio) {
+-		gpiod_set_value(rk817->spk_ctl_gpio, level);
++		#ifdef __MURMUR__
++		if(rk817_pa_power_on==1)
++		{
++			gpiod_set_value(rk817->spk_ctl_gpio, level);
++		}
++		#else
++			gpiod_set_value(rk817->spk_ctl_gpio, level);
++		#endif
+ 		DBG("%s set spk clt %d\n", __func__, level);
+ 		msleep(rk817->spk_mute_delay);
+ 	}
+@@ -472,9 +519,6 @@ static const char * const rk817_playback_path_mode[] = {
+ 
+ static const char * const rk817_capture_path_mode[] = {
+ 	"MIC OFF", "Main Mic", "Hands Free Mic", "BT Sco Mic"};
+-	
+-static const char * const rk817_mute_mode[] = {
+-	"UNMUTE", "MUTE"};	
+ 
+ static const char * const rk817_call_path_mode[] = {
+ 	"OFF", "RCV", "SPK", "HP", "HP_NO_MIC", "BT"}; /* 0-5 */
+@@ -487,10 +531,6 @@ static SOC_ENUM_SINGLE_DECL(rk817_playback_path_type,
+ static SOC_ENUM_SINGLE_DECL(rk817_capture_path_type,
+ 	0, 0, rk817_capture_path_mode);
+ 
+-static SOC_ENUM_SINGLE_DECL(rk817_mute_type,
+-	0, 0, rk817_mute_mode);
+-	
+-	
+ static SOC_ENUM_SINGLE_DECL(rk817_call_path_type,
+ 	0, 0, rk817_call_path_mode);
+ 
+@@ -813,125 +853,12 @@ static int rk817_capture_path_put(struct snd_kcontrol *kcontrol,
+ 					 ucontrol->value.integer.value[0]);
+ }
+ 
+-
+-
+-static int rk817_mute_config(struct snd_soc_component *component,
+-				     long pre_mute, long target_mute)
+-{
+-	
+-	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
+-
+-	rk817->mute = target_mute;
+-
+-	DBG("%s : set mute %ld, pre_mute %ld\n", __func__,
+-	    rk817->mute, pre_mute);
+-
+-	if (rk817->mute) {
+-		rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
+-		rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 0);
+-
+-		snd_soc_component_update_bits(component,
+-					      RK817_CODEC_DDAC_MUTE_MIXCTL,
+-					      DACMT_ENABLE, DACMT_ENABLE);
+-		snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+-					PWD_DACBIAS_DOWN | PWD_DACD_DOWN |
+-					PWD_DACL_DOWN | PWD_DACR_DOWN);
+-		/* Reset DAC DTOP_DIGEN_CLKE for playback stopped */
+-		snd_soc_component_update_bits(component, RK817_CODEC_DTOP_DIGEN_CLKE,
+-					      DAC_DIG_CLK_EN, DAC_DIG_CLK_DIS);
+-		snd_soc_component_update_bits(component, RK817_CODEC_DTOP_DIGEN_CLKE,
+-					      DAC_DIG_CLK_EN, DAC_DIG_CLK_EN);
+-	} else {
+-		snd_soc_component_update_bits(component,
+-					      RK817_CODEC_DDAC_MUTE_MIXCTL,
+-					      DACMT_ENABLE, DACMT_DISABLE);
+-
+-		switch (rk817->playback_path) {
+-		case SPK_PATH:
+-		case RING_SPK:
+-			if (rk817->out_l2spk_r2hp) {
+-				snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+-						PWD_DACBIAS_ON | PWD_DACD_ON |
+-						PWD_DACL_ON | PWD_DACR_ON);
+-			} else if (!rk817->use_ext_amplifier) {
+-				snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+-						PWD_DACBIAS_ON | PWD_DACD_ON |
+-						PWD_DACL_DOWN | PWD_DACR_DOWN);
+-			} else {
+-				snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+-						PWD_DACBIAS_ON | PWD_DACD_DOWN |
+-						PWD_DACL_ON | PWD_DACR_ON);
+-			}
+-			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 1);
+-			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 0);
+-			break;
+-		case HP_PATH:
+-		case HP_NO_MIC:
+-		case RING_HP:
+-		case RING_HP_NO_MIC:
+-			snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+-					PWD_DACBIAS_ON | PWD_DACD_DOWN |
+-					PWD_DACL_ON | PWD_DACR_ON);
+-			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
+-			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 1);
+-			break;
+-		case SPK_HP:
+-		case RING_SPK_HP:
+-			snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+-					PWD_DACBIAS_ON | PWD_DACD_ON |
+-					PWD_DACL_ON | PWD_DACR_ON);
+-			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 1);
+-			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 1);
+-			break;
+-		default:
+-			break;
+-		}
+-	}
+-
+-	return 0;
+-}
+-
+-static int rk817_mute_get(struct snd_kcontrol *kcontrol,
+-				  struct snd_ctl_elem_value *ucontrol)
+-{
+-	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+-	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
+-
+-	DBG("%s : mute %ld\n", __func__,
+-	    rk817->mute);
+-
+-	ucontrol->value.integer.value[0] = rk817->mute;
+-
+-	return 0;
+-}
+-
+-static int rk817_set_put(struct snd_kcontrol *kcontrol,
+-				  struct snd_ctl_elem_value *ucontrol)
+-{
+-	struct snd_soc_component *component = snd_soc_kcontrol_component(kcontrol);
+-	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
+-
+-/*	if (rk817->mute == ucontrol->value.integer.value[0]) {
+-		DBG("%s : mute is not changed!\n",
+-		    __func__);
+-		return 0;
+-	}
+-*/
+-	return rk817_mute_config(component, rk817->mute,
+-					 ucontrol->value.integer.value[0]);
+-}
+-
+-
+-
+ static struct snd_kcontrol_new rk817_snd_path_controls[] = {
+ 	SOC_ENUM_EXT("Playback Path", rk817_playback_path_type,
+ 		     rk817_playback_path_get, rk817_playback_path_put),
+ 
+ 	SOC_ENUM_EXT("Capture MIC Path", rk817_capture_path_type,
+ 		     rk817_capture_path_get, rk817_capture_path_put),
+-			 
+-	SOC_ENUM_EXT("MUTE", rk817_mute_type,
+-		     rk817_mute_get, rk817_set_put),		 
+ };
+ 
+ static int rk817_set_dai_sysclk(struct snd_soc_dai *codec_dai,
+@@ -978,12 +905,14 @@ static int rk817_hw_params(struct snd_pcm_substream *substream,
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_soc_component *component = rtd->codec_dai->component;
++	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
+ 	unsigned int rate = params_rate(params);
+ 	unsigned char apll_cfg3_val;
+ 	unsigned char dtop_digen_sr_lmt0;
+ 	unsigned char dtop_digen_clke;
+ 
+-	DBG("%s : sample rate = %dHz\n", __func__, rate);
++	DBG("%s : MCLK = %dHz, sample rate = %dHz\n",
++	    __func__, rk817->stereo_sysclk, rate);
+ 
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+ 		dtop_digen_clke = DAC_DIG_CLK_EN;
+@@ -1049,6 +978,44 @@ static int rk817_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
++#if defined(CONFIG_RK817_HEADSET)
++/*
++ * Call from rk_headset_irq_hook_adc.c
++ *
++ * Enable micbias for HOOK detection and disable external Amplifier
++ * when jack insertion.
++ */
++
++int rk817_hp_inserted=0;
++#ifdef __MURMUR__
++EXPORT_SYMBOL(rk817_hp_inserted);
++#endif
++int rk817_headset_detect(int jack_insert)
++{
++	struct rk817_codec_priv *rk817;
++	
++	rk817_hp_inserted=jack_insert;
++
++	if (!rk817_g)
++		return -1;
++
++	rk817=rk817_g;
++	
++	rk817_g->hp_inserted = jack_insert;
++
++	/*enable micbias and disable PA*/
++	if (jack_insert) {		
++		rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
++	}else{
++		rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 1);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(rk817_headset_detect);
++#endif
++
++
+ static int rk817_digital_mute(struct snd_soc_dai *dai, int mute)
+ {
+ 	struct snd_soc_component *component = dai->component;
+@@ -1098,10 +1065,18 @@ static int rk817_digital_mute(struct snd_soc_dai *dai, int mute)
+ 		case HP_NO_MIC:
+ 		case RING_HP:
+ 		case RING_HP_NO_MIC:
+-			snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
++					snd_soc_component_write(component, RK817_CODEC_ADAC_CFG1,
+ 					PWD_DACBIAS_ON | PWD_DACD_DOWN |
+ 					PWD_DACL_ON | PWD_DACR_ON);
++			#if defined(CONFIG_RK817_HEADSET)
++			if (!rk817->hp_inserted){
++				rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 1);
++			}else{
++				rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
++			}
++			#else
+ 			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
++			#endif	
+ 			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 1);
+ 			break;
+ 		case SPK_HP:
+@@ -1196,6 +1171,10 @@ static int rk817_suspend(struct snd_soc_component *component)
+ 
+ static int rk817_resume(struct snd_soc_component *component)
+ {
++	struct rk817_codec_priv *rk817 = snd_soc_component_get_drvdata(component);
++
++	rk817_capture_path_config(component, OFF, rk817->capture_path);
++	rk817_playback_path_config(component, OFF, rk817->playback_path);
+ 	return 0;
+ }
+ 
+@@ -1372,6 +1351,7 @@ static int rk817_platform_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "%s : rk817 is NULL\n", __func__);
+ 		return -EINVAL;
+ 	}
++	
+ 
+ 	rk817_codec_data = devm_kzalloc(&pdev->dev,
+ 					sizeof(struct rk817_codec_priv),
+@@ -1379,6 +1359,14 @@ static int rk817_platform_probe(struct platform_device *pdev)
+ 	if (!rk817_codec_data)
+ 		return -ENOMEM;
+ 
++	#if defined(CONFIG_RK817_HEADSET)
++	rk817_g	= rk817_codec_data;
++	if(rk817_g->hp_inserted)
++		rk817_g->hp_inserted = true;
++	else
++		rk817_g->hp_inserted = false;
++	#endif
++
+ 	platform_set_drvdata(pdev, rk817_codec_data);
+ 
+ 	ret = rk817_codec_parse_dt_property(&pdev->dev, rk817_codec_data);
+@@ -1455,4 +1443,4 @@ module_platform_driver(rk817_codec_driver);
+ 
+ MODULE_DESCRIPTION("ASoC RK817 codec driver");
+ MODULE_AUTHOR("binyuan <kevan.lan@rock-chips.com>");
+-MODULE_LICENSE("GPL v2");
++MODULE_LICENSE("GPL v2");
+\ No newline at end of file
+diff --git a/sound/soc/codecs/rk817_codec.h b/sound/soc/codecs/rk817_codec.h
+index a928c3239..a98b01104 100644
+--- a/sound/soc/codecs/rk817_codec.h
++++ b/sound/soc/codecs/rk817_codec.h
+@@ -212,4 +212,4 @@ struct rk817_init_bit_typ {
+ 	unsigned int init_bit;
+ };
+ 
+-#endif /* __RK817_CODEC_H__ */
++#endif /* __RK817_CODEC_H__ */
+\ No newline at end of file

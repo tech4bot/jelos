@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2019-present SumavisionQ5 (https://github.com/SumavisionQ5)
+# Modifications by Shanti Gilbert (https://github.com/shantigilbert)
+# Copyright (C) 2020-present Fewtarius
+
+. /etc/profile
+
+SPLASH_TYPE="intro"
+
+rotation="$(cat /sys/devices/virtual/graphics/fbcon/rotate)"
+
+if [ "${SPLASH_TYPE}" == "intro" ]
+then
+  case ${rotation} in
+    0)
+      SPLASH="/usr/config/splash/splash.png"
+      magick $SPLASH bgra:/dev/fb0
+    ;;
+    1)
+      SPLASH="/usr/config/splash/splash_90.png"
+      magick $SPLASH bgra:/dev/fb0
+    ;;
+    2)
+      SPLASH="/usr/config/splash/splash_180.png"
+      magick $SPLASH bgra:/dev/fb0
+    ;;
+    3)
+      SPLASH="/usr/config/splash/splash_270.png"
+      magick $SPLASH bgra:/dev/fb0
+    ;;
+  esac
+else
+  exit 0
+fi

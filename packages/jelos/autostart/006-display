@@ -5,7 +5,7 @@
 # Minimal OS variable loading for performance
 . /etc/profile.d/001-functions
 
-tocon "Configuring display..."
+#tocon "Configuring display..."
 
 ### Variables may need to be device specific here.
 BRIGHTNESS=$(get_setting system.brightness)
