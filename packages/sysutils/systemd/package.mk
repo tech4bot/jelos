@@ -289,4 +289,5 @@ post_install() {
   enable_service debug-shell.service
   enable_service joyleds.service
   enable_service adckeys.service
+  enable_service poweroff_batt.service
 }
