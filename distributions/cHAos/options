@@ -11,7 +11,7 @@
   GIT_ORGANIZATION="JustEnoughLinuxOS"
 
 # The name of the github project for updates
-  GIT_REPO="distribution"
+  GIT_REPO="jelos"
 
 # Name of the Distro to build (full name, without special characters)
   DISTRONAME="cHAos"
@@ -52,7 +52,7 @@
 # a BSP kernel and a rotated display when using DEVICE_ROOT.
   if [ -n "${DEVICE_ROOT}" ]
   then
-    CLEAN_DEVICE_ROOT="busybox systemd initramfs linux u-boot libmali libmali_rk3588 SDL2 SDL2-rotated retroarch mupen64plus-sa-input-sdl flycast-sa duckstation-sa drastic-sa fileman oga_controls portmaster glew-cmake"
+    CLEAN_DEVICE_ROOT="busybox splash systemd initramfs linux u-boot libmali libmali_rk3588 SDL2 SDL2-rotated retroarch mupen64plus-sa-input-sdl flycast-sa duckstation-sa drastic-sa fileman oga_controls portmaster glew-cmake"
   fi
 
 # additional drivers to install:
@@ -162,7 +162,7 @@
 
 # Distribution Specific source location
   DISTRO_MIRROR=""
-  DISTRO_SRC="https://github.com/JustEnoughLinuxOS"
+  DISTRO_SRC="https://github.com/tech4bot"
 
 # Default size of system partition, in MB, eg. 512
   SYSTEM_SIZE=2048
