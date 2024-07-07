@@ -19,6 +19,10 @@ performance 2>/dev/null
 
 /usr/bin/init_leds.sh &
 
+if [ -d /storage/roms/ports_scripts ]; then
+  $(mv /storage/roms/ports_scripts/* /storage/roms/ports/ && rm -rf /storage/roms/ports_scripts) &
+fi
+
 ### Load platform specific quirks
 if [ -d "/usr/lib/autostart/quirks/platforms/${HW_DEVICE}" ]
 then
@@ -104,5 +108,7 @@ systemctl start ${UI_SERVICE} 2>&1 >>${BOOTLOG} &
 DEVICE_CPU_GOVERNOR=$(get_setting system.cpugovernor)
 ${DEVICE_CPU_GOVERNOR} 2>&1 >>${BOOTLOG}
 log "Autostart complete..."
+
+systemctl restart joyleds
 
 clear >/dev/console
