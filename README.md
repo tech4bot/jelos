@@ -12,10 +12,5 @@ cHAos is a Linux distribution that brings life to handheld devices powered by Ro
 * [AmberELEC](https://github.com/AmberELEC)
 * [Lakka](https://www.lakka.tv)
 
-### PC based devices (AMD64)
-* [ChimeraOS](https://github.com/ChimeraOS)
-* [SteamFork](https://github.com/SteamFork)
-* [Batocera](https://github.com/batocera-linux/batocera.linux)
-
 > [!NOTE]
 > The project is still in its early stages, so bugs are to be expected.
